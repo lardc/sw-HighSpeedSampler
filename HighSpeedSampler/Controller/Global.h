@@ -14,7 +14,8 @@
 #define UNLOCK_PWD_4				1
 //
 // Global miscellaneous parameters
-#define TIMER_PERIOD				10					// (in ms)
+#define TIMER_FAST_PERIOD			10					// (in ms)
+#define TIMER_SLOW_PERIOD			50					// (in ms)
 #define	SCCI_TIMEOUT_TICKS			1000				// (in ms)
 #define DT_EPROM_ADDRESS			0
 #define EP_READ_COUNT				5
@@ -42,7 +43,7 @@
 // Serial port
 #define SERIAL_READ_TIMEOUT			50					// Read timeout constant (in ms)
 #define SERIAL_WRITE_TIMEOUT		50					// Write timeout constant (in ms)
-#define SERIAL_BUFFER_LEN			64
+#define SERIAL_BUFFER_LEN			256
 //
 // Calculation
 #define IRR_SEARCH_WND				50					// Search window for minimum value

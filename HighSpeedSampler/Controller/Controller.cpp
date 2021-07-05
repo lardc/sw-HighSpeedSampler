@@ -28,8 +28,7 @@ typedef void (*FUNC_AsyncDelegate)();
 //
 volatile uint64_t CONTROL_TimeCounter = 0;
 volatile DeviceState CONTROL_State = DS_None;
-static HANDLE hTimer = NULL;
-static HANDLE hTimerQueue = NULL;
+static bool SlowSemaphore = false;
 static uint16_t MEMBUF_Values1[VALUES_READx_SIZE],		MEMBUF_Values1_Counter = 0;
 static uint16_t MEMBUF_Values2[VALUES_READx_SIZE],		MEMBUF_Values2_Counter = 0;
 static uint16_t MEMBUF_ValuesDiag[VALUES_READx_SIZE],	MEMBUF_ValuesDiag_Counter = 0;
@@ -43,7 +42,8 @@ static volatile FUNC_AsyncDelegate DPCDelegate = NULL;
 
 // Forward functions 
 //
-void CALLBACK TimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
+void CALLBACK FastTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
+void CALLBACK SlowTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
 bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError);
 void CONTROL_SetDeviceState(DeviceState NewState);
 void CONTROL_SwitchStateToFault(uint16_t FaultReason, uint16_t FaultReasonEx);
@@ -91,15 +91,28 @@ void CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent
 
 void CONTROL_TimerInit()
 {
-	// Create the timer queue.
-	hTimerQueue = CreateTimerQueue();
-	CreateTimerQueueTimer(&hTimer, hTimerQueue, (WAITORTIMERCALLBACK)&TimerRoutine, NULL, 0, TIMER_PERIOD, 0);
+	HANDLE hFastTimer, hSlowTimer;
+
+	CreateTimerQueueTimer(&hFastTimer, NULL, (WAITORTIMERCALLBACK)&FastTimerRoutine, NULL, 0, TIMER_FAST_PERIOD, WT_EXECUTEDEFAULT);
+	CreateTimerQueueTimer(&hSlowTimer, NULL, (WAITORTIMERCALLBACK)&SlowTimerRoutine, NULL, 0, TIMER_SLOW_PERIOD, WT_EXECUTELONGFUNCTION);
 }
 //----------------------------------------------
 
-void CALLBACK TimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
+void CALLBACK FastTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
 {
-	CONTROL_TimeCounter += TIMER_PERIOD;
+	CONTROL_TimeCounter += TIMER_FAST_PERIOD;
+}
+//----------------------------------------------
+
+void CALLBACK SlowTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
+{
+	if (!SlowSemaphore)
+	{
+		SlowSemaphore = true;
+		SERIAL_UpdateReadBuffer();
+		DEVPROFILE_ProcessRequests();
+		SlowSemaphore = false;
+	}
 }
 //----------------------------------------------
 
@@ -111,10 +124,6 @@ void CONTROL_RequestDPC(FUNC_AsyncDelegate Action)
 
 void CONTROL_Idle()
 {
-	// Handle serial communication
-	SERIAL_UpdateReadBuffer();
-	DEVPROFILE_ProcessRequests();
-
 	// Handle PisoScope data request
 	CONTROL_HandleSamplerData();
 
