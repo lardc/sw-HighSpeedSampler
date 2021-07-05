@@ -21,7 +21,7 @@ void SCCI_Init(pSCCI_Interface Interface, pSCCI_IOConfig IOConfig, pxCCI_Service
  			   void *ArgumentForCallback16);
 
 // Process packets
-void SCCI_Process(pSCCI_Interface Interface, uint64_t CurrentTickCount, bool MaskStateChangeOperations);
+SCCI_States SCCI_Process(pSCCI_Interface Interface, uint64_t CurrentTickCount, bool MaskStateChangeOperations);
 
 
 // Internal functions

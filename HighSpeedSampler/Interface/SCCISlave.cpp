@@ -96,7 +96,7 @@ void SCCI_Init(pSCCI_Interface Interface, pSCCI_IOConfig IOConfig, pxCCI_Service
 }
 // ----------------------------------------
 
-void SCCI_Process(pSCCI_Interface Interface, uint64_t CurrentTickCount, bool MaskStateChangeOperations)
+SCCI_States SCCI_Process(pSCCI_Interface Interface, uint64_t CurrentTickCount, bool MaskStateChangeOperations)
 {
 	switch(Interface->State)
 	{
@@ -132,6 +132,8 @@ void SCCI_Process(pSCCI_Interface Interface, uint64_t CurrentTickCount, bool Mas
 				SCCI_SendErrorFrame(Interface, ERR_TIMEOUT, (uint16_t)(CurrentTickCount - Interface->LastTimestampTicks));
 			break;
 	}
+	
+	return Interface->State;
 }
 // ----------------------------------------
 
@@ -338,10 +340,12 @@ static void SCCI_HandleRead16(pSCCI_Interface Interface)
 
 	if(addr >= Interface->DataTableSize)
 	{
+		printf("send resp\n");
 		SCCI_SendErrorFrame(Interface, ERR_INVALID_ADDESS, addr);
 	}
 	else
 	{
+		printf("send err\n");
 		Interface->MessageBuffer[3] = Interface->DataTableAddress[addr];
 		SCCI_SendResponseFrame(Interface, 5);
 	}

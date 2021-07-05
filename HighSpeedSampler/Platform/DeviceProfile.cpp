@@ -127,7 +127,11 @@ void DEVPROFILE_InitEPWriteService(uint16_t* Indexes, uint16_t* Sizes, uint16_t*
 void DEVPROFILE_ProcessRequests()
 {
 	// Handle interface requests
-	SCCI_Process(&DEVICE_RS232_Interface, CONTROL_TimeCounter, *MaskChangesFlag);
+	static SCCI_States PrevState = SCCI_STATE_WAIT_STARTBYTE;
+	SCCI_States NewState;
+
+	while ((NewState = SCCI_Process(&DEVICE_RS232_Interface, CONTROL_TimeCounter, *MaskChangesFlag)) != PrevState)
+		PrevState = NewState;
 }
 // ----------------------------------------
 
