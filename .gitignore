@@ -1,0 +1,5 @@
+/Release/*.iobj
+/Release/*.ipdb
+/Release/*.pdb
+/.vs
+/HighSpeedSampler/Release
