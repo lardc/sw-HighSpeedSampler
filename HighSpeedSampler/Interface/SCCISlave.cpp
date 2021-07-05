@@ -340,12 +340,10 @@ static void SCCI_HandleRead16(pSCCI_Interface Interface)
 
 	if(addr >= Interface->DataTableSize)
 	{
-		printf("send resp\n");
 		SCCI_SendErrorFrame(Interface, ERR_INVALID_ADDESS, addr);
 	}
 	else
 	{
-		printf("send err\n");
 		Interface->MessageBuffer[3] = Interface->DataTableAddress[addr];
 		SCCI_SendResponseFrame(Interface, 5);
 	}
