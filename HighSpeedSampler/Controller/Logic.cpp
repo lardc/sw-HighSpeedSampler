@@ -124,6 +124,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				FIR_Apply(MEMBUF_fScopeV, MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
 
 				// Main calculations
+				if (DEBUG_MUTE_CALCULATIONS)
+					return PICO_OK;
+
 				try
 				{
 					sprintf_s(message, 256, "Results:");
