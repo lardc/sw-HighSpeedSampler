@@ -98,7 +98,7 @@ void SERIAL_UpdateReadBuffer()
 			if (dwBytesRead == 1)
 				SerialReadBuffer[SerialReadBufferCounter++] = Data;
 			
-		} while (dwBytesRead);
+		} while (dwBytesRead && SerialReadBufferCounter < SERIAL_BUFFER_LEN);
 	}
 }
 //----------------------------------------------
