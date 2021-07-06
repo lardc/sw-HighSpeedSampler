@@ -124,6 +124,8 @@ void CONTROL_RequestDPC(FUNC_AsyncDelegate Action)
 
 void CONTROL_Idle()
 {
+	SlowTimerRoutine(NULL, false);
+
 	// Handle PisoScope data request
 	CONTROL_HandleSamplerData();
 
