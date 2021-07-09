@@ -53,15 +53,20 @@ PICO_STATUS LOGIC_PisoScopeActivate()
 	float CurrentSet, CurrentSetV, VoltageSet;
 	char message[256];
 
+	// Current parameters
 	ShuntResCache = (float)DataTable[REG_SHUNT_RES_N] / DataTable[REG_SHUNT_RES_D];
-	//
 	CurrentSet = (float)DataTable[REG_CURRENT_AMPL];
 	CurrentSetV = 0.001f * CurrentSet * ShuntResCache;
-	//
-	VoltageSet = (float)DataTable[REG_VOLTAGE_AMPL];
+	
+	// Voltage parameters
+	float Vdiv = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
+	float Vmax = (float)fabs(SAMPLING_QRR_VR) * 2;
+	if (DataTable[REG_MEASURE_MODE] == MODE_QRR_TQ && DataTable[REG_VOLTAGE_AMPL] > Vmax)
+		Vmax = DataTable[REG_VOLTAGE_AMPL];
+	VoltageSet = Vdiv * Vmax;
 
-	if ((status = SAMPLER_ConfigureChannels(iv_range = SAMPLER_SelectRange(CurrentSetV),
-											v_range  = SAMPLER_SelectRange(VoltageSet))) == PICO_OK)
+	if ((status = SAMPLER_ConfigureChannels(v_range  = SAMPLER_SelectRange(VoltageSet),
+											iv_range = SAMPLER_SelectRange(CurrentSetV))) == PICO_OK)
 	{
 		status = SAMPLER_ActivateSampling();
 	}
@@ -69,7 +74,7 @@ PICO_STATUS LOGIC_PisoScopeActivate()
 	// Diagnostic output
 	sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Max I voltage, V: %.3f", ShuntResCache, iv_range, CurrentSetV);
 	InfoPrint(IP_Info, message);
-	sprintf_s(message, 256, "Voltage range: %d; Max voltage, V: %.3f", v_range, VoltageSet);
+	sprintf_s(message, 256, "Voltage range: %d; Max voltage, V: %.3f; Max div voltage, V: %.3f", v_range, Vmax, VoltageSet);
 	InfoPrint(IP_Info, message);
 
 	return status;
@@ -82,7 +87,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 	uint32_t i, Index_0, Index_irr, Index_trr, Index_025, Index_09, Index_0V;
 	PICO_STATUS status;
-	float invert_mul = (DataTable[REG_INVERT_CURRENT]) ? (-1.0f) : (1.0f);
+	bool InvertCurrent = (DataTable[REG_INVERT_CURRENT] == 1);
 	float Actual_dIdt = 0;
 
 	SCOPE_ReadFullCounter = 0;
@@ -103,9 +108,15 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				// Diagnostic output
 				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; Kfine: %.3f; Offset: %.1f", ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), Kfine, Offset);
 				InfoPrint(IP_Info, message);
+
+				if (InvertCurrent)
+				{
+					for (i = 0; i < MEMBUF_Scope_Counter; ++i)
+						MEMBUF_ScopeI[i] = -MEMBUF_ScopeI[i];
+				}
 				
 				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
-					MEMBUF_fScopeI[i] = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i] * Kfine * invert_mul) / (INT16_MAX * ShuntResCache * 0.001f) + Offset;
+					MEMBUF_fScopeI[i] = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i] * Kfine) / (INT16_MAX * ShuntResCache * 0.001f) + Offset;
 
 				// Convert to voltage
 				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
@@ -117,7 +128,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				InfoPrint(IP_Info, message);
 
 				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
-					MEMBUF_fScopeV[i] = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i] * Kvoltage) / INT16_MAX + Offset;
+					MEMBUF_fScopeV[i] = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX) + Offset;
 
 				// Filter
 				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);

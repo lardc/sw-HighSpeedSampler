@@ -33,6 +33,7 @@
 #define SAMPLING_TIME_FRACTION		0.008f				// Sampling time fraction (in us)
 #define SAMPLING_SAMPLES			375000L				// Number of samples in block mode
 #define SAMPLING_SAFE_RANGE_RATIO	1.2f				// Safe zone relative to amplitude
+#define SAMPLING_QRR_VR				-100.0f				// Normal reverse recovery voltage for Qrr-only mode
 //
 // Trigger settings
 #define TRIGGER_SOURCE				PS5000A_EXTERNAL	// Trigger source channel
