@@ -71,6 +71,7 @@
 #define REG_RESULT_ZERO				204	// Zero-cross time (in us x10)
 #define REG_RESULT_ZERO_V			205	// Zero-cross time for on-state voltage (in us x10)
 #define REG_RESULT_DIDT				206	// Actual value of dIdt (in A/us x10)
+#define REG_RESULT_ID				207	// Direct current amplitude (in A)
 //
 #define REG_SP__3					255
 

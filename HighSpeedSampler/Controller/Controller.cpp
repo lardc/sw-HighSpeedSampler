@@ -182,10 +182,10 @@ void CONTROL_HandleSamplerData()
 			bool CalcOK;
 			uint16_t CalcProblem = 0;
 			uint32_t Index0 = 0, Index0V = 0;
-			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0;
+			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0;
 
 			InfoPrint(IP_Info, "Sampling finished");
-			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt,
+			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt, &Id,
 														 (DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true, &Index0V);
 			CalcOK = (CalcProblem == PROBLEM_NONE) ? true : false;
 
@@ -195,6 +195,7 @@ void CONTROL_HandleSamplerData()
 			DataTable[REG_RESULT_ZERO] =	(uint16_t)(Index0 * SAMPLING_TIME_FRACTION * 10);
 			DataTable[REG_RESULT_ZERO_V] =	(uint16_t)(Index0V * SAMPLING_TIME_FRACTION * 10);
 			DataTable[REG_RESULT_DIDT] =	(uint16_t)(dIdt * 10);
+			DataTable[REG_RESULT_ID] =		(uint16_t)Id;
 
 			if (status != PICO_OK)
 				CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
