@@ -46,7 +46,7 @@
 #define SERIAL_BUFFER_LEN			64
 //
 // Calculation
-#define IRR_SEARCH_WND				50					// Search window for minimum value
+#define IRR_SEARCH_WND				800					// Search window for minimum value
 #define OSV_FALL_DETECT_V			-50.0f				// Voltage fall detect (in V)
 #define OSV_RISE_DETECT_V			-5.0f				// Voltage rise detect (in V)
 #define MUL_FACTOR_I				4					// Scope range multiply factor (I)
