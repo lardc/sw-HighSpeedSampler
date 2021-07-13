@@ -11,6 +11,7 @@
 #include "Controller\Global.h"
 #include "Controller\Math\Calculate.h"
 #include "Controller\Math\FIR.h"
+#include "Controller\Math\SplineFilter.h"
 #include "Platform\DataTable.h"
 #include "Platform\DeviceObjectDictionary.h"
 #include "Info.h"
@@ -19,7 +20,7 @@
 //
 static int16_t MEMBUF_ScopeI[SAMPLING_SAMPLES], MEMBUF_ScopeV[SAMPLING_SAMPLES];
 static float MEMBUF_fScopeI[SAMPLING_SAMPLES], MEMBUF_fScopeV[SAMPLING_SAMPLES];
-static float MEMBUF_fScopeIFiltered[SAMPLING_SAMPLES], MEMBUF_fScopeVFiltered[SAMPLING_SAMPLES];;
+static float MEMBUF_fScopeIFiltered[SAMPLING_SAMPLES], MEMBUF_fScopeVFiltered[SAMPLING_SAMPLES];
 static uint32_t MEMBUF_Scope_Counter, SCOPE_ReadFullCounter;
 static float ShuntResCache;
 
@@ -130,9 +131,13 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
 					MEMBUF_fScopeV[i] = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX) + Offset;
 
-				// Filter
+				// FIR filter
 				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 				FIR_Apply(MEMBUF_fScopeV, MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
+
+				// Spline filter
+				SPLINE_Apply(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
+				SPLINE_Apply(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
 
 				// Main calculations
 				try
