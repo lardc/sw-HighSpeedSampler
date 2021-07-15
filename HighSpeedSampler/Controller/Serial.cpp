@@ -92,17 +92,24 @@ void SERIAL_UpdateReadBuffer()
 	{
 		uint8_t Data;
 		DWORD dwBytesRead = 0;
-
-		ReadFile(hSerial, &Data, 1, &dwBytesRead, NULL);
-		if (dwBytesRead == 1)
-			SerialReadBuffer[SerialReadBufferCounter++] = Data;
-
-		/*do
+		bool DataRx;
+		do
 		{
-			ReadFile(hSerial, &Data, 1, &dwBytesRead, NULL);
-			if (dwBytesRead == 1)
-				SerialReadBuffer[SerialReadBufferCounter++] = Data;
-		} while (dwBytesRead && SerialReadBufferCounter < SERIAL_BUFFER_LEN);*/
+			DataRx = false;
+			do
+			{
+				ReadFile(hSerial, &Data, 1, &dwBytesRead, NULL);
+				if (dwBytesRead == 1)
+				{
+					SerialReadBuffer[SerialReadBufferCounter++] = Data;
+					DataRx = true;
+				}
+			} while (dwBytesRead && SerialReadBufferCounter < SERIAL_BUFFER_LEN);
+			
+			if (DataRx)
+				Sleep(1);
+
+		} while (DataRx);
 	}
 }
 //----------------------------------------------
