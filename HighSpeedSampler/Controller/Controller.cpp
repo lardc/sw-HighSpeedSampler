@@ -40,10 +40,12 @@ static uint16_t MEMBUF_ValuesWr[VALUES_WRITEx_SIZE],	MEMBUF_ValuesWr_Counter = 0
 //
 static volatile bool CycleActive = false; 
 static volatile FUNC_AsyncDelegate DPCDelegate = NULL;
+bool SlowSemaphore = false;
 
 // Forward functions 
 //
-void CALLBACK TimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
+void CALLBACK FastTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
+void CALLBACK SlowTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
 bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError);
 void CONTROL_SetDeviceState(DeviceState NewState);
 void CONTROL_SwitchStateToFault(uint16_t FaultReason, uint16_t FaultReasonEx);
@@ -91,15 +93,25 @@ void CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent
 
 void CONTROL_TimerInit()
 {
-	// Create the timer queue.
-	hTimerQueue = CreateTimerQueue();
-	CreateTimerQueueTimer(&hTimer, hTimerQueue, (WAITORTIMERCALLBACK)&TimerRoutine, NULL, 0, TIMER_PERIOD, 0);
+	HANDLE hFastTimer, hSlowTimer;
+	CreateTimerQueueTimer(&hFastTimer, NULL, (WAITORTIMERCALLBACK)&FastTimerRoutine, NULL, 0, TIMER_FAST_PERIOD, WT_EXECUTEDEFAULT);
+	CreateTimerQueueTimer(&hSlowTimer, NULL, (WAITORTIMERCALLBACK)&SlowTimerRoutine, NULL, 0, TIMER_SLOW_PERIOD, WT_EXECUTEDEFAULT);
 }
 //----------------------------------------------
-
-void CALLBACK TimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
+void CALLBACK FastTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
 {
-	CONTROL_TimeCounter += TIMER_PERIOD;
+	CONTROL_TimeCounter += TIMER_FAST_PERIOD;
+}
+//----------------------------------------------
+void CALLBACK SlowTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
+{
+	if (!SlowSemaphore)
+	{
+		SlowSemaphore = true;
+		SERIAL_UpdateReadBuffer();
+		DEVPROFILE_ProcessRequests();
+		SlowSemaphore = false;
+	}
 }
 //----------------------------------------------
 
@@ -112,8 +124,7 @@ void CONTROL_RequestDPC(FUNC_AsyncDelegate Action)
 void CONTROL_Idle()
 {
 	// Handle serial communication
-	SERIAL_UpdateReadBuffer();
-	DEVPROFILE_ProcessRequests();
+	SlowTimerRoutine(NULL, false);
 
 	// Handle PisoScope data request
 	CONTROL_HandleSamplerData();
@@ -182,10 +193,10 @@ void CONTROL_HandleSamplerData()
 			bool CalcOK;
 			uint16_t CalcProblem = 0;
 			uint32_t Index0 = 0, Index0V = 0;
-			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0;
+			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0, Vd = 0;
 
 			InfoPrint(IP_Info, "Sampling finished");
-			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt, &Id,
+			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt, &Id, &Vd,
 														 (DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true, &Index0V);
 			CalcOK = (CalcProblem == PROBLEM_NONE) ? true : false;
 
