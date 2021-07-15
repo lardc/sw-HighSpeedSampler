@@ -19,6 +19,7 @@
 #define DT_EPROM_ADDRESS			0
 #define EP_READ_COUNT				5
 #define EP_WRITE_COUNT				1
+#define DIAG_EMULATE_SCOPES			false
 //
 // Measurement mode
 #define MODE_QRR					0
