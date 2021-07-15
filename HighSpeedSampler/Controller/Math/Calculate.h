@@ -21,5 +21,7 @@ bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* Crossi
 bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, float* dIdt);
 // Calculate Id
 float CALC_Id(float* Buffer, uint32_t t0);
+// Calculate Vd
+float CALC_Vd(float* Buffer, uint32_t BufferLength);
 
 #endif	// __CALCULATE_H__

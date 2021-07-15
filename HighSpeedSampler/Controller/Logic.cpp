@@ -82,7 +82,7 @@ PICO_STATUS LOGIC_PisoScopeActivate()
 }
 // ----------------------------------------
 
-PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V)
+PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V)
 {
 	char message[256];
 
@@ -190,6 +190,12 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					*Id = CALC_Id(MEMBUF_fScopeIFiltered, Index_0);
 
 					sprintf_s(message, 256, "Idc: %.1f", *Id);
+					InfoPrint(IP_Info, message);
+
+					// Calculate Vd
+					*Vd = CALC_Vd(MEMBUF_fScopeVFiltered, SAMPLING_SAMPLES);
+
+					sprintf_s(message, 256, "Vd: %.1f", *Vd);
 					InfoPrint(IP_Info, message);
 
 					// Calculate voltage zero crossing

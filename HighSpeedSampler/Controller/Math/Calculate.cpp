@@ -144,6 +144,20 @@ float CALC_Id(float* Buffer, uint32_t t0)
 }
 //----------------------------------------------
 
+float CALC_Vd(float* Buffer, uint32_t BufferLength)
+{
+	uint32_t i;
+	float Vd;
+
+	// Find Vd_max
+	Vd = Buffer[0];
+	for (i = 1; i < BufferLength; ++i)
+		if (Buffer[i] > Vd) Vd = Buffer[i];
+
+	return Vd;
+}
+//----------------------------------------------
+
 bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex)
 {
 	uint32_t i, index = BufferLength;
