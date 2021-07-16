@@ -62,9 +62,9 @@
 #define REG_DISABLE_REASON			194	// Fault reason in the case DeviceState -> DISABLED
 #define REG_WARNING					195	// Warning if present
 #define REG_PROBLEM					196	// Problem reason
-#define REG_DF_REASON_EX			197	// Fault or disable extended reason
+#define REG_OP_RESULT				197	// Operation result
 //
-#define REG_FINISHED				200	// Operation result
+#define REG_DF_REASON_EX			200	// Fault or disable extended reason
 #define REG_RESULT_IRR				201	// Reverse recovery current amplitude (in A)
 #define REG_RESULT_TRR				202	// Reverse recovery time (in us x10)
 #define REG_RESULT_QRR				203	// Reverse recovery charge (in uQ)

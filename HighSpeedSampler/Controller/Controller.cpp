@@ -216,7 +216,7 @@ void CONTROL_HandleSamplerData()
 				MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector);
 				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector);
 
-				DataTable[REG_FINISHED] = CalcOK ? OPRESULT_OK : OPRESULT_FAIL;
+				DataTable[REG_OP_RESULT] = CalcOK ? OPRESULT_OK : OPRESULT_FAIL;
 				DataTable[REG_PROBLEM] = CalcProblem;
 				CONTROL_SetDeviceState(DS_None);
 			}
@@ -234,7 +234,7 @@ void CONTROL_FillWPPartDefault()
 	DataTable[REG_PROBLEM] = PROBLEM_NONE;
 	DataTable[REG_DF_REASON_EX] = 0;
 	//
-	DataTable[REG_FINISHED] = OPRESULT_NONE;
+	DataTable[REG_OP_RESULT] = OPRESULT_NONE;
 	DataTable[REG_RESULT_IRR] = 0;
 	DataTable[REG_RESULT_TRR] = 0;
 	DataTable[REG_RESULT_QRR] = 0;
