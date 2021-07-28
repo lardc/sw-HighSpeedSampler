@@ -26,7 +26,7 @@ static float ShuntResCache;
 
 // Functions
 //
-PICO_STATUS LOGIC_PisoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
+PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
 	PICO_STATUS status;
 
@@ -37,7 +37,7 @@ PICO_STATUS LOGIC_PisoScopeInit(const char *ScopeSerialVoltage, const char *Scop
 }
 //----------------------------------------------
 
-void LOGIC_PisoScopeList()
+void LOGIC_PicoScopeList()
 {
 	char Serials[256];
 	int16_t Count = 0, StringLength = 256;
@@ -47,7 +47,7 @@ void LOGIC_PisoScopeList()
 }
 //----------------------------------------------
 
-PICO_STATUS LOGIC_PisoScopeActivate()
+PICO_STATUS LOGIC_PicoScopeActivate()
 {
 	PICO_STATUS status;
 	PS5000A_RANGE iv_range, v_range;

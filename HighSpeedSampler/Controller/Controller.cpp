@@ -50,7 +50,7 @@ bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError);
 void CONTROL_SetDeviceState(DeviceState NewState);
 void CONTROL_SwitchStateToFault(uint16_t FaultReason, uint16_t FaultReasonEx);
 void CONTROL_SwitchStateToDisabled(uint16_t DisableReason, uint16_t DisableReasonEx);
-void CONTROL_PisoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
+void CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
 void CONTROL_HandleSamplerData();
 void CONTROL_FillWPPartDefault();
 
@@ -87,7 +87,7 @@ void CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent
 	DEVPROFILE_ResetControlSection();
 
 	// Connect scope
-	CONTROL_PisoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
+	CONTROL_PicoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
 }
 //----------------------------------------------
 
@@ -126,7 +126,7 @@ void CONTROL_Idle()
 	// Handle serial communication
 	SlowTimerRoutine(NULL, false);
 
-	// Handle PisoScope data request
+	// Handle PicoScope data request
 	CONTROL_HandleSamplerData();
 
 	// Process deferred procedures
@@ -168,19 +168,19 @@ void CONTROL_SwitchStateToDisabled(uint16_t DisableReason, uint16_t DisableReaso
 }
 // ----------------------------------------
 
-void CONTROL_PisoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
+void CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
-	PICO_STATUS status = LOGIC_PisoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
+	PICO_STATUS status = LOGIC_PicoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
 
 	if (status != PICO_OK)
 	{
-		InfoPrint(IP_Err, "Pisoscope init error");
+		InfoPrint(IP_Err, "Picoscope init error");
 		CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
 
-		LOGIC_PisoScopeList();
+		LOGIC_PicoScopeList();
 	}
 	else
-		InfoPrint(IP_Info, "Pisoscope init done");
+		InfoPrint(IP_Info, "Picoscope init done");
 }
 // ----------------------------------------
 
@@ -260,7 +260,7 @@ bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError)
 				InfoPrint(IP_Info, "Start test request");
 				if(CONTROL_State == DS_None)
 				{
-					PICO_STATUS status = LOGIC_PisoScopeActivate();
+					PICO_STATUS status = LOGIC_PicoScopeActivate();
 					if (status == PICO_OK)
 					{
 						CONTROL_FillWPPartDefault();
