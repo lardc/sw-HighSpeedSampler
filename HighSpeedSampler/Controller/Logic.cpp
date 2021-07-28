@@ -8,6 +8,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <Windows.h>
 #include "Controller\Global.h"
 #include "Controller\Math\Calculate.h"
 #include "Controller\Math\FIR.h"
@@ -29,6 +30,11 @@ static float ShuntResCache;
 PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
 	PICO_STATUS status;
+	int Attempts = 0;
+
+	InfoPrint(IP_Info, "Attempt to detect scopes");
+	while (LOGIC_PicoScopeList() < 2 && Attempts++ < SCOPE_DETECT_ATTEMPTS)
+		Sleep(SCOPE_DETECT_WAIT_PAUSE);
 
 	if ((status = SAMPLER_Open(ScopeSerialVoltage, ScopeSerialCurrent)) == PICO_OK)
 		status = SAMPLER_Init();
@@ -37,13 +43,17 @@ PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *Scop
 }
 //----------------------------------------------
 
-void LOGIC_PicoScopeList()
+int16_t LOGIC_PicoScopeList()
 {
-	char Serials[256];
+	char Serials[256], message[256];
 	int16_t Count = 0, StringLength = 256;
 
 	ps5000aEnumerateUnits(&Count, (int8_t *)Serials, &StringLength);
-	printf("Detected scopes count: %d\nDetected scopes serials: %s\n", Count, Serials);
+
+	sprintf_s(message, 256, "Detected scopes count: %d\nDetected scopes serials: %s\n", Count, Serials);
+	InfoPrint(IP_Info, message);
+
+	return Count;
 }
 //----------------------------------------------
 
