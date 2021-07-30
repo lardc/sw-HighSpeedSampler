@@ -22,9 +22,9 @@ float SAMPLER_GetRangeCoeff(PS5000A_RANGE Range);
 
 // Functions
 //
-bool SAMPLER_StatusComb(PICO_STATUS status)
+PICO_STATUS SAMPLER_StatusComb(PICO_STATUS status)
 {
-	if(status == PICO_USB3_0_DEVICE_NON_USB3_0_PORT)
+	if(status == PICO_USB3_0_DEVICE_NON_USB3_0_PORT || status == PICO_EEPROM_CORRUPT)
 		return PICO_OK;
 	else
 		return status;
