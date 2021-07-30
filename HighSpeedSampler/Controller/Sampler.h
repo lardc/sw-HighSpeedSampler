@@ -11,6 +11,7 @@
 //
 bool SAMPLER_StatusGood(PICO_STATUS status);
 PICO_STATUS SAMPLER_Open(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
+void SAMPLER_GetHandlers(int16_t* Voltage, int16_t* Current);
 PICO_STATUS SAMPLER_Init();
 PICO_STATUS SAMPLER_Close();
 PICO_STATUS SAMPLER_ConfigureChannels(PS5000A_RANGE VRange, PS5000A_RANGE IRange);

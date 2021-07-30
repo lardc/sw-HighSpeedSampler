@@ -50,10 +50,19 @@ PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler)
 PICO_STATUS SAMPLER_Open(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
 	PICO_STATUS ret_val = PICO_OK;
+	VHandler = IHandler = 0;
+
 	if ((ret_val = SAMPLER_OpenX(ScopeSerialVoltage, &VHandler)) == PICO_OK)
 		ret_val = SAMPLER_OpenX(ScopeSerialCurrent, &IHandler);
 
 	return ret_val;
+}
+//----------------------------------------------
+
+void SAMPLER_GetHandlers(int16_t* Voltage, int16_t* Current)
+{
+	*Voltage = VHandler;
+	*Current = IHandler;
 }
 //----------------------------------------------
 

@@ -174,7 +174,9 @@ bool CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSeri
 
 	if (status != PICO_OK)
 	{
-		InfoPrint(IP_Err, "Picoscope init error");
+		char message[256];
+		sprintf_s(message, 256, "Picoscope init error 0x%08x", status);
+		InfoPrint(IP_Err, message);
 		CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
 		LOGIC_PicoScopeList();
 		

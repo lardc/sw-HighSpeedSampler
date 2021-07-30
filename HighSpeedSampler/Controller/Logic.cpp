@@ -33,8 +33,18 @@ PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *Scop
 
 	InfoPrint(IP_Info, "Attempt to open scopes");
 	if ((status = SAMPLER_Open(ScopeSerialVoltage, ScopeSerialCurrent)) == PICO_OK)
+	{
+		InfoPrint(IP_Info, "Scopes are opened");
 		status = SAMPLER_Init();
-	
+	}
+
+	int16_t VHandler, IHandler;
+	char message[256];
+
+	SAMPLER_GetHandlers(&VHandler, &IHandler);
+	sprintf_s(message, 256, "Voltage handle: %d, current handle: %d", VHandler, IHandler);
+	InfoPrint(IP_Info, message);
+
 	return status;
 }
 //----------------------------------------------
