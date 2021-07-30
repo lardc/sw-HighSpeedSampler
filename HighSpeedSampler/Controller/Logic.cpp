@@ -50,7 +50,10 @@ int16_t LOGIC_PicoScopeList()
 
 	ps5000aEnumerateUnits(&Count, (int8_t *)Serials, &StringLength);
 
-	sprintf_s(message, 256, "Detected scopes count: %d\nDetected scopes serials: %s\n", Count, Serials);
+	sprintf_s(message, 256, "Detected scopes count: %d", Count);
+	InfoPrint(IP_Info, message);
+
+	sprintf_s(message, 256, "Detected scopes serials: %s", Serials);
 	InfoPrint(IP_Info, message);
 
 	return Count;
