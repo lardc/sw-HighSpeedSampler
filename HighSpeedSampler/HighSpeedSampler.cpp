@@ -51,7 +51,11 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	CONTROL_TimerInit();
 	if (!CONTROL_Init(ScopeSerialVoltage.c_str(), ScopeSerialCurrent.c_str()))
+	{
+		InfoPrint(IP_Info, "Exit");
+		InfoPrint(IP_Info, "--------------------");
 		return 1;
+	}
 
 	while(true)
 		CONTROL_Idle();

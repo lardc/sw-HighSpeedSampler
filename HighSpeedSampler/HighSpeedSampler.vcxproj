@@ -82,7 +82,7 @@
       <AdditionalDependencies>External\ps5000a.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /f /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config"</Command>
+      <Command>xcopy /f /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config" &amp;&amp; xcopy /f /y "$(ProjectDir)HighSpeedSampler.cmd" "$(OutDir)HighSpeedSampler.cmd"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
