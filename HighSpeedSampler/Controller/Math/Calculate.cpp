@@ -97,17 +97,15 @@ float CALC_Qrr(float* Buffer, uint32_t BufferLength, uint32_t t0, uint32_t trr, 
 bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, float* dIdt)
 {
 	uint32_t i, Id_half, Ir_half;
-	float Idc;
+	float Id;
 
 	// Find Id_max
-	Idc = Buffer[0];
-	for (i = 1; i < t0; ++i)
-		if (Buffer[i] > Idc) Idc = Buffer[i];
+	Id = CALC_Id(Buffer, t0);
 
 	// Find Id_half
 	for (i = 0; i < t0; ++i)
 	{
-		if (Buffer[i] <= (Idc / 2))
+		if (Buffer[i] <= (Id / 2))
 		{
 			Id_half = i;
 			break;
@@ -129,6 +127,34 @@ bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, flo
 	// Calculate dIdt
 	*dIdt = (Buffer[Id_half] - Buffer[Ir_half]) / ((Ir_half - Id_half) * TimeFraction);
 	return true;
+}
+//----------------------------------------------
+
+float CALC_Id(float* Buffer, uint32_t t0)
+{
+	uint32_t i;
+	float Id;
+
+	// Find Id_max
+	Id = Buffer[0];
+	for (i = 1; i < t0; ++i)
+		if (Buffer[i] > Id) Id = Buffer[i];
+
+	return Id;
+}
+//----------------------------------------------
+
+float CALC_Vd(float* Buffer, uint32_t BufferLength)
+{
+	uint32_t i;
+	float Vd;
+
+	// Find Vd_max
+	Vd = Buffer[0];
+	for (i = 1; i < BufferLength; ++i)
+		if (Buffer[i] > Vd) Vd = Buffer[i];
+
+	return Vd;
 }
 //----------------------------------------------
 

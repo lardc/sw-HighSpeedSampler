@@ -8,9 +8,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <Windows.h>
 #include "Controller\Global.h"
 #include "Controller\Math\Calculate.h"
 #include "Controller\Math\FIR.h"
+#include "Controller\Math\SplineFilter.h"
 #include "Platform\DataTable.h"
 #include "Platform\DeviceObjectDictionary.h"
 #include "Info.h"
@@ -19,15 +21,20 @@
 //
 static int16_t MEMBUF_ScopeI[SAMPLING_SAMPLES], MEMBUF_ScopeV[SAMPLING_SAMPLES];
 static float MEMBUF_fScopeI[SAMPLING_SAMPLES], MEMBUF_fScopeV[SAMPLING_SAMPLES];
-static float MEMBUF_fScopeIFiltered[SAMPLING_SAMPLES], MEMBUF_fScopeVFiltered[SAMPLING_SAMPLES];;
+static float MEMBUF_fScopeIFiltered[SAMPLING_SAMPLES], MEMBUF_fScopeVFiltered[SAMPLING_SAMPLES];
 static uint32_t MEMBUF_Scope_Counter, SCOPE_ReadFullCounter;
 static float ShuntResCache;
 
 // Functions
 //
-PICO_STATUS LOGIC_PisoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
+PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
 	PICO_STATUS status;
+	int Attempts = 0;
+
+	InfoPrint(IP_Info, "Attempt to detect scopes");
+	while (LOGIC_PicoScopeList() < 2 && Attempts++ < SCOPE_DETECT_ATTEMPTS)
+		Sleep(SCOPE_DETECT_WAIT_PAUSE);
 
 	if ((status = SAMPLER_Open(ScopeSerialVoltage, ScopeSerialCurrent)) == PICO_OK)
 		status = SAMPLER_Init();
@@ -36,32 +43,41 @@ PICO_STATUS LOGIC_PisoScopeInit(const char *ScopeSerialVoltage, const char *Scop
 }
 //----------------------------------------------
 
-void LOGIC_PisoScopeList()
+int16_t LOGIC_PicoScopeList()
 {
-	char Serials[256];
+	char Serials[256], message[256];
 	int16_t Count = 0, StringLength = 256;
 
 	ps5000aEnumerateUnits(&Count, (int8_t *)Serials, &StringLength);
-	printf("Detected scopes count: %d\nDetected scopes serials: %s\n", Count, Serials);
+
+	sprintf_s(message, 256, "Detected scopes count: %d\nDetected scopes serials: %s\n", Count, Serials);
+	InfoPrint(IP_Info, message);
+
+	return Count;
 }
 //----------------------------------------------
 
-PICO_STATUS LOGIC_PisoScopeActivate()
+PICO_STATUS LOGIC_PicoScopeActivate()
 {
 	PICO_STATUS status;
 	PS5000A_RANGE iv_range, v_range;
 	float CurrentSet, CurrentSetV, VoltageSet;
 	char message[256];
 
+	// Current parameters
 	ShuntResCache = (float)DataTable[REG_SHUNT_RES_N] / DataTable[REG_SHUNT_RES_D];
-	//
 	CurrentSet = (float)DataTable[REG_CURRENT_AMPL];
 	CurrentSetV = 0.001f * CurrentSet * ShuntResCache;
-	//
-	VoltageSet = (float)DataTable[REG_VOLTAGE_AMPL];
+	
+	// Voltage parameters
+	float Vdiv = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
+	float Vmax = (float)fabs(SAMPLING_QRR_VR) * 2;
+	if (DataTable[REG_MEASURE_MODE] == MODE_QRR_TQ && DataTable[REG_VOLTAGE_AMPL] > Vmax)
+		Vmax = DataTable[REG_VOLTAGE_AMPL];
+	VoltageSet = Vdiv * Vmax;
 
-	if ((status = SAMPLER_ConfigureChannels(iv_range = SAMPLER_SelectRange(CurrentSetV),
-											v_range  = SAMPLER_SelectRange(VoltageSet))) == PICO_OK)
+	if ((status = SAMPLER_ConfigureChannels(v_range  = SAMPLER_SelectRange(VoltageSet),
+											iv_range = SAMPLER_SelectRange(CurrentSetV))) == PICO_OK)
 	{
 		status = SAMPLER_ActivateSampling();
 	}
@@ -69,20 +85,20 @@ PICO_STATUS LOGIC_PisoScopeActivate()
 	// Diagnostic output
 	sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Max I voltage, V: %.3f", ShuntResCache, iv_range, CurrentSetV);
 	InfoPrint(IP_Info, message);
-	sprintf_s(message, 256, "Voltage range: %d; Max voltage, V: %.3f", v_range, VoltageSet);
+	sprintf_s(message, 256, "Voltage range: %d; Max voltage, V: %.3f; Max div voltage, V: %.3f", v_range, Vmax, VoltageSet);
 	InfoPrint(IP_Info, message);
 
 	return status;
 }
 // ----------------------------------------
 
-PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V)
+PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V)
 {
 	char message[256];
 
 	uint32_t i, Index_0, Index_irr, Index_trr, Index_025, Index_09, Index_0V;
 	PICO_STATUS status;
-	float invert_mul = (DataTable[REG_INVERT_CURRENT]) ? (-1.0f) : (1.0f);
+	bool InvertCurrent = (DataTable[REG_INVERT_CURRENT] == 1);
 	float Actual_dIdt = 0;
 
 	SCOPE_ReadFullCounter = 0;
@@ -103,9 +119,15 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				// Diagnostic output
 				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; Kfine: %.3f; Offset: %.1f", ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), Kfine, Offset);
 				InfoPrint(IP_Info, message);
+
+				if (InvertCurrent)
+				{
+					for (i = 0; i < MEMBUF_Scope_Counter; ++i)
+						MEMBUF_ScopeI[i] = -MEMBUF_ScopeI[i];
+				}
 				
 				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
-					MEMBUF_fScopeI[i] = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i] * Kfine * invert_mul) / (INT16_MAX * ShuntResCache * 0.001f) + Offset;
+					MEMBUF_fScopeI[i] = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i] * Kfine) / (INT16_MAX * ShuntResCache * 0.001f) + Offset;
 
 				// Convert to voltage
 				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
@@ -117,11 +139,15 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				InfoPrint(IP_Info, message);
 
 				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
-					MEMBUF_fScopeV[i] = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i] * Kvoltage) / INT16_MAX + Offset;
+					MEMBUF_fScopeV[i] = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX) + Offset;
 
-				// Filter
+				// FIR filter
 				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 				FIR_Apply(MEMBUF_fScopeV, MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
+
+				// Spline filter
+				SPLINE_Apply(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
+				SPLINE_Apply(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
 
 				// Main calculations
 				try
@@ -168,6 +194,18 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (dIdt) *dIdt = Actual_dIdt;
 
 					sprintf_s(message, 256, "Actual dIdt: %.1f", Actual_dIdt);
+					InfoPrint(IP_Info, message);
+
+					// Calculate Id
+					*Id = CALC_Id(MEMBUF_fScopeIFiltered, Index_0);
+
+					sprintf_s(message, 256, "Idc: %.1f", *Id);
+					InfoPrint(IP_Info, message);
+
+					// Calculate Vd
+					*Vd = CALC_Vd(MEMBUF_fScopeVFiltered, SAMPLING_SAMPLES);
+
+					sprintf_s(message, 256, "Vd: %.1f", *Vd);
 					InfoPrint(IP_Info, message);
 
 					// Calculate voltage zero crossing

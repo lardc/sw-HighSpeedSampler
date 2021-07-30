@@ -21,7 +21,6 @@ const double FIR[FIR_LENGTH] = {-1.17151865e-004, -1.68374093e-004, -2.07613478e
 //
 void FIR_Apply(float* InputBuffer, float* OutputBuffer, int BufferLength)
 {
-	/*
 	int i, j;
 	double tmp;
 
@@ -43,7 +42,6 @@ void FIR_Apply(float* InputBuffer, float* OutputBuffer, int BufferLength)
 		OutputBuffer[i] = InputBuffer[i];
 		OutputBuffer[BufferLength - i - 1] = InputBuffer[BufferLength - i - 1];
 	}
-	*/
 
 	for (int i = 0; i < BufferLength; i++)
 		OutputBuffer[i] = InputBuffer[i];

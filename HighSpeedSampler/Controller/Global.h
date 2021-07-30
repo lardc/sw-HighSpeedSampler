@@ -19,6 +19,7 @@
 #define DT_EPROM_ADDRESS			0
 #define EP_READ_COUNT				5
 #define EP_WRITE_COUNT				1
+#define DIAG_EMULATE_SCOPES			false
 //
 // Measurement mode
 #define MODE_QRR					0
@@ -33,6 +34,11 @@
 #define SAMPLING_TIME_FRACTION		0.008f				// Sampling time fraction (in us)
 #define SAMPLING_SAMPLES			375000L				// Number of samples in block mode
 #define SAMPLING_SAFE_RANGE_RATIO	1.2f				// Safe zone relative to amplitude
+#define SAMPLING_QRR_VR				-100.0f				// Normal reverse recovery voltage for Qrr-only mode
+//
+// Scopes detection settings
+#define SCOPE_DETECT_ATTEMPTS		10
+#define SCOPE_DETECT_WAIT_PAUSE		2000				// in ms
 //
 // Trigger settings
 #define TRIGGER_SOURCE				PS5000A_EXTERNAL	// Trigger source channel
@@ -40,12 +46,14 @@
 #define TRIGGER_LEVEL				2000				// In ticks of 16bit range, signed value
 //
 // Serial port
-#define SERIAL_READ_TIMEOUT			50					// Read timeout constant (in ms)
+#define TIMER_FAST_PERIOD			10
+#define TIMER_SLOW_PERIOD			20
+#define SERIAL_READ_TIMEOUT			0					// Read timeout constant (in ms)
 #define SERIAL_WRITE_TIMEOUT		50					// Write timeout constant (in ms)
 #define SERIAL_BUFFER_LEN			64
 //
 // Calculation
-#define IRR_SEARCH_WND				50					// Search window for minimum value
+#define IRR_SEARCH_WND				800					// Search window for minimum value
 #define OSV_FALL_DETECT_V			-50.0f				// Voltage fall detect (in V)
 #define OSV_RISE_DETECT_V			-5.0f				// Voltage rise detect (in V)
 #define MUL_FACTOR_I				4					// Scope range multiply factor (I)

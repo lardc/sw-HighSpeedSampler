@@ -92,6 +92,7 @@
     <ClInclude Include="Controller\Logic.h" />
     <ClInclude Include="Controller\Math\Calculate.h" />
     <ClInclude Include="Controller\Math\FIR.h" />
+    <ClInclude Include="Controller\Math\SplineFilter.h" />
     <ClInclude Include="Controller\Memory.h" />
     <ClInclude Include="Controller\Sampler.h" />
     <ClInclude Include="Controller\Serial.h" />
@@ -107,6 +108,7 @@
     <ClInclude Include="Platform\DataTable.h" />
     <ClInclude Include="Platform\DeviceObjectDictionary.h" />
     <ClInclude Include="Platform\DeviceProfile.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="VendorLib\PicoStatus.h" />
@@ -118,6 +120,7 @@
     <ClCompile Include="Controller\Logic.cpp" />
     <ClCompile Include="Controller\Math\Calculate.cpp" />
     <ClCompile Include="Controller\Math\FIR.cpp" />
+    <ClCompile Include="Controller\Math\SplineFilter.cpp" />
     <ClCompile Include="Controller\Memory.cpp" />
     <ClCompile Include="Controller\Sampler.cpp" />
     <ClCompile Include="Controller\Serial.cpp" />
@@ -137,6 +140,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="HighSpeedSampler.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="HighSpeedSampler.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

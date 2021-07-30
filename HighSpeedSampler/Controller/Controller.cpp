@@ -40,15 +40,17 @@ static uint16_t MEMBUF_ValuesWr[VALUES_WRITEx_SIZE],	MEMBUF_ValuesWr_Counter = 0
 //
 static volatile bool CycleActive = false; 
 static volatile FUNC_AsyncDelegate DPCDelegate = NULL;
+bool SlowSemaphore = false;
 
 // Forward functions 
 //
-void CALLBACK TimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
+void CALLBACK FastTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
+void CALLBACK SlowTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
 bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError);
 void CONTROL_SetDeviceState(DeviceState NewState);
 void CONTROL_SwitchStateToFault(uint16_t FaultReason, uint16_t FaultReasonEx);
 void CONTROL_SwitchStateToDisabled(uint16_t DisableReason, uint16_t DisableReasonEx);
-void CONTROL_PisoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
+void CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
 void CONTROL_HandleSamplerData();
 void CONTROL_FillWPPartDefault();
 
@@ -85,21 +87,31 @@ void CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent
 	DEVPROFILE_ResetControlSection();
 
 	// Connect scope
-	CONTROL_PisoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
+	CONTROL_PicoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
 }
 //----------------------------------------------
 
 void CONTROL_TimerInit()
 {
-	// Create the timer queue.
-	hTimerQueue = CreateTimerQueue();
-	CreateTimerQueueTimer(&hTimer, hTimerQueue, (WAITORTIMERCALLBACK)&TimerRoutine, NULL, 0, TIMER_PERIOD, 0);
+	HANDLE hFastTimer, hSlowTimer;
+	CreateTimerQueueTimer(&hFastTimer, NULL, (WAITORTIMERCALLBACK)&FastTimerRoutine, NULL, 0, TIMER_FAST_PERIOD, WT_EXECUTEDEFAULT);
+	CreateTimerQueueTimer(&hSlowTimer, NULL, (WAITORTIMERCALLBACK)&SlowTimerRoutine, NULL, 0, TIMER_SLOW_PERIOD, WT_EXECUTEDEFAULT);
 }
 //----------------------------------------------
-
-void CALLBACK TimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
+void CALLBACK FastTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
 {
-	CONTROL_TimeCounter += TIMER_PERIOD;
+	CONTROL_TimeCounter += TIMER_FAST_PERIOD;
+}
+//----------------------------------------------
+void CALLBACK SlowTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
+{
+	if (!SlowSemaphore)
+	{
+		SlowSemaphore = true;
+		SERIAL_UpdateReadBuffer();
+		DEVPROFILE_ProcessRequests();
+		SlowSemaphore = false;
+	}
 }
 //----------------------------------------------
 
@@ -112,10 +124,9 @@ void CONTROL_RequestDPC(FUNC_AsyncDelegate Action)
 void CONTROL_Idle()
 {
 	// Handle serial communication
-	SERIAL_UpdateReadBuffer();
-	DEVPROFILE_ProcessRequests();
+	SlowTimerRoutine(NULL, false);
 
-	// Handle PisoScope data request
+	// Handle PicoScope data request
 	CONTROL_HandleSamplerData();
 
 	// Process deferred procedures
@@ -157,19 +168,19 @@ void CONTROL_SwitchStateToDisabled(uint16_t DisableReason, uint16_t DisableReaso
 }
 // ----------------------------------------
 
-void CONTROL_PisoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
+void CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
-	PICO_STATUS status = LOGIC_PisoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
+	PICO_STATUS status = LOGIC_PicoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
 
 	if (status != PICO_OK)
 	{
-		InfoPrint(IP_Err, "Pisoscope init error");
+		InfoPrint(IP_Err, "Picoscope init error");
 		CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
 
-		LOGIC_PisoScopeList();
+		LOGIC_PicoScopeList();
 	}
 	else
-		InfoPrint(IP_Info, "Pisoscope init done");
+		InfoPrint(IP_Info, "Picoscope init done");
 }
 // ----------------------------------------
 
@@ -182,10 +193,10 @@ void CONTROL_HandleSamplerData()
 			bool CalcOK;
 			uint16_t CalcProblem = 0;
 			uint32_t Index0 = 0, Index0V = 0;
-			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0;
+			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0, Vd = 0;
 
 			InfoPrint(IP_Info, "Sampling finished");
-			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt,
+			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt, &Id, &Vd,
 														 (DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true, &Index0V);
 			CalcOK = (CalcProblem == PROBLEM_NONE) ? true : false;
 
@@ -195,6 +206,7 @@ void CONTROL_HandleSamplerData()
 			DataTable[REG_RESULT_ZERO] =	(uint16_t)(Index0 * SAMPLING_TIME_FRACTION * 10);
 			DataTable[REG_RESULT_ZERO_V] =	(uint16_t)(Index0V * SAMPLING_TIME_FRACTION * 10);
 			DataTable[REG_RESULT_DIDT] =	(uint16_t)(dIdt * 10);
+			DataTable[REG_RESULT_ID] =		(uint16_t)Id;
 
 			if (status != PICO_OK)
 				CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
@@ -204,7 +216,7 @@ void CONTROL_HandleSamplerData()
 				MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector);
 				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector);
 
-				DataTable[REG_FINISHED] = CalcOK ? OPRESULT_OK : OPRESULT_FAIL;
+				DataTable[REG_OP_RESULT] = CalcOK ? OPRESULT_OK : OPRESULT_FAIL;
 				DataTable[REG_PROBLEM] = CalcProblem;
 				CONTROL_SetDeviceState(DS_None);
 			}
@@ -222,7 +234,7 @@ void CONTROL_FillWPPartDefault()
 	DataTable[REG_PROBLEM] = PROBLEM_NONE;
 	DataTable[REG_DF_REASON_EX] = 0;
 	//
-	DataTable[REG_FINISHED] = OPRESULT_NONE;
+	DataTable[REG_OP_RESULT] = OPRESULT_NONE;
 	DataTable[REG_RESULT_IRR] = 0;
 	DataTable[REG_RESULT_TRR] = 0;
 	DataTable[REG_RESULT_QRR] = 0;
@@ -248,7 +260,7 @@ bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError)
 				InfoPrint(IP_Info, "Start test request");
 				if(CONTROL_State == DS_None)
 				{
-					PICO_STATUS status = LOGIC_PisoScopeActivate();
+					PICO_STATUS status = LOGIC_PicoScopeActivate();
 					if (status == PICO_OK)
 					{
 						CONTROL_FillWPPartDefault();
