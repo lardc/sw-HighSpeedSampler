@@ -24,7 +24,7 @@ extern volatile uint64_t CONTROL_TimeCounter;
 // Functions
 //
 void CONTROL_TimerInit();
-void CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
+bool CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
 void CONTROL_Idle();
 
 #endif	// __CONTROLLER_H__

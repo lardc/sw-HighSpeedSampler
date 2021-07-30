@@ -36,10 +36,6 @@
 #define SAMPLING_SAFE_RANGE_RATIO	1.2f				// Safe zone relative to amplitude
 #define SAMPLING_QRR_VR				-100.0f				// Normal reverse recovery voltage for Qrr-only mode
 //
-// Scopes detection settings
-#define SCOPE_DETECT_ATTEMPTS		10
-#define SCOPE_DETECT_WAIT_PAUSE		2000				// in ms
-//
 // Trigger settings
 #define TRIGGER_SOURCE				PS5000A_EXTERNAL	// Trigger source channel
 #define TRIGGER_MODE				PS5000A_RISING		// Triggering mode

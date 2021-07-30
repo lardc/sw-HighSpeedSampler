@@ -50,13 +50,13 @@ bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError);
 void CONTROL_SetDeviceState(DeviceState NewState);
 void CONTROL_SwitchStateToFault(uint16_t FaultReason, uint16_t FaultReasonEx);
 void CONTROL_SwitchStateToDisabled(uint16_t DisableReason, uint16_t DisableReasonEx);
-void CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
+bool CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
 void CONTROL_HandleSamplerData();
 void CONTROL_FillWPPartDefault();
 
 // Functions
 //
-void CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
+bool CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
 	// Init read endpoints
 	uint16_t EPReadIndexes[EP_READ_COUNT] = { EP_READ_I, EP_READ_V, EP_READ_DIAG, EP_READ_FULL_I_PART, EP_READ_FULL_V_PART };
@@ -87,7 +87,7 @@ void CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent
 	DEVPROFILE_ResetControlSection();
 
 	// Connect scope
-	CONTROL_PicoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
+	return CONTROL_PicoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
 }
 //----------------------------------------------
 
@@ -168,7 +168,7 @@ void CONTROL_SwitchStateToDisabled(uint16_t DisableReason, uint16_t DisableReaso
 }
 // ----------------------------------------
 
-void CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
+bool CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
 	PICO_STATUS status = LOGIC_PicoScopeInit(ScopeSerialVoltage, ScopeSerialCurrent);
 
@@ -176,11 +176,16 @@ void CONTROL_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSeri
 	{
 		InfoPrint(IP_Err, "Picoscope init error");
 		CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
-
 		LOGIC_PicoScopeList();
+		
+		Sleep(2000);
+		return false;
 	}
 	else
+	{
 		InfoPrint(IP_Info, "Picoscope init done");
+		return true;
+	}
 }
 // ----------------------------------------
 

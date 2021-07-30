@@ -30,12 +30,8 @@ static float ShuntResCache;
 PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
 	PICO_STATUS status;
-	int Attempts = 0;
 
-	InfoPrint(IP_Info, "Attempt to detect scopes");
-	while (LOGIC_PicoScopeList() < 2 && Attempts++ < SCOPE_DETECT_ATTEMPTS)
-		Sleep(SCOPE_DETECT_WAIT_PAUSE);
-
+	InfoPrint(IP_Info, "Attempt to open scopes");
 	if ((status = SAMPLER_Open(ScopeSerialVoltage, ScopeSerialCurrent)) == PICO_OK)
 		status = SAMPLER_Init();
 	

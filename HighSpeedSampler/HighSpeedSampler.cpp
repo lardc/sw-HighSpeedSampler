@@ -50,7 +50,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		InfoPrint(IP_Info, "Serial port opened");
 
 	CONTROL_TimerInit();
-	CONTROL_Init(ScopeSerialVoltage.c_str(), ScopeSerialCurrent.c_str());
+	if (!CONTROL_Init(ScopeSerialVoltage.c_str(), ScopeSerialCurrent.c_str()))
+		return 1;
 
 	while(true)
 		CONTROL_Idle();
