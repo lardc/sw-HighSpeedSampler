@@ -22,7 +22,7 @@ float SAMPLER_GetRangeCoeff(PS5000A_RANGE Range);
 
 // Functions
 //
-PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler)
+PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler, PICO_STATUS *OpenStatus)
 {
 	if (DIAG_EMULATE_SCOPES)
 	{
@@ -32,19 +32,22 @@ PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler)
 
 	PICO_STATUS ret_val = ps5000aOpenUnit(Handler, (int8_t *)SerialNumber, SAMPLING_RESOLUTION);
 	if (ret_val == PICO_POWER_SUPPLY_NOT_CONNECTED || ret_val == PICO_EEPROM_CORRUPT || ret_val == PICO_OK)
+	{
+		*OpenStatus = ret_val;
 		ret_val = ps5000aChangePowerSource(*Handler, PICO_POWER_SUPPLY_NOT_CONNECTED);
+	}
 
 	return ret_val;
 }
 //----------------------------------------------
 
-PICO_STATUS SAMPLER_Open(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
+PICO_STATUS SAMPLER_Open(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent, PICO_STATUS *VOpenStatus, PICO_STATUS *IOpenStatus)
 {
 	PICO_STATUS ret_val = PICO_OK;
 	VHandler = IHandler = 0;
 
-	if ((ret_val = SAMPLER_OpenX(ScopeSerialVoltage, &VHandler)) == PICO_OK)
-		ret_val = SAMPLER_OpenX(ScopeSerialCurrent, &IHandler);
+	if ((ret_val = SAMPLER_OpenX(ScopeSerialVoltage, &VHandler, VOpenStatus)) == PICO_OK)
+		ret_val = SAMPLER_OpenX(ScopeSerialCurrent, &IHandler, IOpenStatus);
 
 	return ret_val;
 }

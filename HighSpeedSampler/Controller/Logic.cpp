@@ -29,21 +29,28 @@ static float ShuntResCache;
 //
 PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent)
 {
-	PICO_STATUS status;
+	char message[256];
+	PICO_STATUS status, VOpenStatus = PICO_OK, IOpenStatus = PICO_OK;
 
 	InfoPrint(IP_Info, "Attempt to open scopes");
-	if ((status = SAMPLER_Open(ScopeSerialVoltage, ScopeSerialCurrent)) == PICO_OK)
+	status = SAMPLER_Open(ScopeSerialVoltage, ScopeSerialCurrent, &VOpenStatus, &IOpenStatus);
+
+	sprintf_s(message, 256, "Voltage scope open status: 0x%08x", VOpenStatus);
+	InfoPrint(status == PICO_OK ? IP_Info : IP_Warn, message);
+
+	sprintf_s(message, 256, "Current scope open status: 0x%08x", IOpenStatus);
+	InfoPrint(status == PICO_OK ? IP_Info : IP_Warn, message);
+
+	if (status == PICO_OK)
 	{
 		InfoPrint(IP_Info, "Scopes are opened");
 		status = SAMPLER_Init();
 	}
 
 	int16_t VHandler, IHandler;
-	char message[256];
-
 	SAMPLER_GetHandlers(&VHandler, &IHandler);
 	sprintf_s(message, 256, "Voltage handle: %d, current handle: %d", VHandler, IHandler);
-	InfoPrint(IP_Info, message);
+	InfoPrint(status == PICO_OK ? IP_Info : IP_Warn, message);
 
 	return status;
 }

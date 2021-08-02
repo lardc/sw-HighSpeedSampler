@@ -10,7 +10,7 @@
 // Functions
 //
 bool SAMPLER_StatusGood(PICO_STATUS status);
-PICO_STATUS SAMPLER_Open(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent);
+PICO_STATUS SAMPLER_Open(const char* ScopeSerialVoltage, const char* ScopeSerialCurrent, PICO_STATUS* VOpenStatus, PICO_STATUS* IOpenStatus);
 void SAMPLER_GetHandlers(int16_t* Voltage, int16_t* Current);
 PICO_STATUS SAMPLER_Init();
 PICO_STATUS SAMPLER_Close();
