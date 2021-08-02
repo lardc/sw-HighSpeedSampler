@@ -139,6 +139,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="HighSpeedSampler.cmd" />
     <None Include="HighSpeedSampler.config" />
   </ItemGroup>
   <ItemGroup>

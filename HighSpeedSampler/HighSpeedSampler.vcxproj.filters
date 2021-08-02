@@ -173,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="HighSpeedSampler.config" />
+    <None Include="HighSpeedSampler.cmd" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HighSpeedSampler.rc">
