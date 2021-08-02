@@ -32,6 +32,8 @@ PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *Scop
 	char message[256];
 	PICO_STATUS status, VOpenStatus = PICO_OK, IOpenStatus = PICO_OK;
 
+	LOGIC_PicoScopeList();
+
 	InfoPrint(IP_Info, "Attempt to open scopes");
 	status = SAMPLER_Open(ScopeSerialVoltage, ScopeSerialCurrent, &VOpenStatus, &IOpenStatus);
 
