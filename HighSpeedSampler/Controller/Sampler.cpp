@@ -31,10 +31,21 @@ PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler, PICO_STATU
 	}
 
 	PICO_STATUS ret_val = ps5000aOpenUnit(Handler, (int8_t *)SerialNumber, SAMPLING_RESOLUTION);
-	if (ret_val == PICO_POWER_SUPPLY_NOT_CONNECTED || ret_val == PICO_EEPROM_CORRUPT || ret_val == PICO_OK)
+
+	switch (ret_val)
 	{
-		*OpenStatus = ret_val;
-		ret_val = ps5000aChangePowerSource(*Handler, PICO_POWER_SUPPLY_NOT_CONNECTED);
+		case PICO_OK:
+		case PICO_POWER_SUPPLY_NOT_CONNECTED:
+		case PICO_EEPROM_CORRUPT:
+		case PICO_USB3_0_DEVICE_NON_USB3_0_PORT:
+			{
+				*OpenStatus = ret_val;
+				ret_val = ps5000aChangePowerSource(*Handler, PICO_POWER_SUPPLY_NOT_CONNECTED);
+			}
+			break;
+
+		default:
+			break;
 	}
 
 	return ret_val;
