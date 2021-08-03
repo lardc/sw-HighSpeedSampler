@@ -325,7 +325,7 @@ bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError)
 			{
 				DEVPROFILE_ResetEPs();
 
-				MEMBUF_ValuesDiag_Counter = 500;
+				MEMBUF_ValuesDiag_Counter = VALUES_READx_SIZE;
 				for (int i = 0; i < MEMBUF_ValuesDiag_Counter; i++)
 					MEMBUF_ValuesDiag[i] = i % 20;
 			}
