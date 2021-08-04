@@ -74,6 +74,9 @@
 #define REG_RESULT_ID				207	// Direct current amplitude (in A)
 #define REG_RESULT_VD				208	// Direct voltage amplitude (in V)
 //
+#define REG_EP_ELEMENTARY_FRACT		220	// Elementary fraction length in ns
+#define REG_EP_STEP_FRACTION_CNT	221	// Number of elementary fractions in the EP single step
+//
 #define REG_SP__3					255
 
 

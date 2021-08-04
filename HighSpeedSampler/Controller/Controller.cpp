@@ -219,12 +219,15 @@ void CONTROL_HandleSamplerData()
 				CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
 			else
 			{
+				uint16_t SampleTimeStep;
 				uint32_t forced_sector = (uint32_t)((float)DataTable[REG_DIAG_FORCE_SECTOR_READ] / SAMPLING_TIME_FRACTION);
-				MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector);
-				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector);
+				MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, &SampleTimeStep);
+				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, NULL);
 
+				DataTable[REG_EP_STEP_FRACTION_CNT] = CalcOK ? 1 : SampleTimeStep;
 				DataTable[REG_OP_RESULT] = CalcOK ? OPRESULT_OK : OPRESULT_FAIL;
 				DataTable[REG_PROBLEM] = CalcProblem;
+				
 				CONTROL_SetDeviceState(DS_None);
 			}
 		}
@@ -247,6 +250,12 @@ void CONTROL_FillWPPartDefault()
 	DataTable[REG_RESULT_QRR] = 0;
 	DataTable[REG_RESULT_ZERO] = 0;
 	DataTable[REG_RESULT_ZERO_V] = 0;
+	DataTable[REG_RESULT_DIDT] = 0;
+	DataTable[REG_RESULT_ID] = 0;
+	DataTable[REG_RESULT_VD] = 0;
+
+	DataTable[REG_EP_ELEMENTARY_FRACT] = (uint16_t)(SAMPLING_TIME_FRACTION * 1000);
+	DataTable[REG_EP_STEP_FRACTION_CNT] = 1;
 }
 // ----------------------------------------
 
