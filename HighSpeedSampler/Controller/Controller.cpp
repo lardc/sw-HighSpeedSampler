@@ -29,7 +29,6 @@ typedef void (*FUNC_AsyncDelegate)();
 volatile uint64_t CONTROL_TimeCounter = 0;
 volatile DeviceState CONTROL_State = DS_None;
 static HANDLE hTimer = NULL;
-static HANDLE hTimerQueue = NULL;
 static uint16_t MEMBUF_Values1[VALUES_READx_SIZE],		MEMBUF_Values1_Counter = 0;
 static uint16_t MEMBUF_Values2[VALUES_READx_SIZE],		MEMBUF_Values2_Counter = 0;
 static uint16_t MEMBUF_ValuesDiag[VALUES_READx_SIZE],	MEMBUF_ValuesDiag_Counter = 0;
@@ -40,10 +39,11 @@ static uint16_t MEMBUF_ValuesWr[VALUES_WRITEx_SIZE],	MEMBUF_ValuesWr_Counter = 0
 //
 static volatile bool CycleActive = false; 
 static volatile FUNC_AsyncDelegate DPCDelegate = NULL;
-bool SlowSemaphore = false;
+static volatile bool SlowSemaphore = false;
 
 // Forward functions 
 //
+void SlowTimerRoutineX(bool TimerExec);
 void CALLBACK FastTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
 void CALLBACK SlowTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired);
 bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError);
@@ -93,11 +93,23 @@ bool CONTROL_Init(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent
 
 void CONTROL_TimerInit()
 {
-	HANDLE hFastTimer, hSlowTimer;
+	HANDLE hFastTimer;
 	CreateTimerQueueTimer(&hFastTimer, NULL, (WAITORTIMERCALLBACK)&FastTimerRoutine, NULL, 0, TIMER_FAST_PERIOD, WT_EXECUTEDEFAULT);
-	CreateTimerQueueTimer(&hSlowTimer, NULL, (WAITORTIMERCALLBACK)&SlowTimerRoutine, NULL, 0, TIMER_SLOW_PERIOD, WT_EXECUTEDEFAULT);
 }
 //----------------------------------------------
+
+void CONTROL_AddRS232Timer()
+{
+	CreateTimerQueueTimer(&hTimer, NULL, (WAITORTIMERCALLBACK)&SlowTimerRoutine, NULL, 0, TIMER_SLOW_PERIOD, WT_EXECUTEDEFAULT);
+}
+//----------------------------------------------
+
+void CONTROL_DeleteRS232Timer()
+{
+	DeleteTimerQueueTimer(NULL, hTimer, NULL);
+}
+//----------------------------------------------
+
 void CALLBACK FastTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
 {
 	CONTROL_TimeCounter += TIMER_FAST_PERIOD;
@@ -105,10 +117,16 @@ void CALLBACK FastTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
 //----------------------------------------------
 void CALLBACK SlowTimerRoutine(PVOID lpParam, BOOL TimerOrWaitFired)
 {
+	SlowTimerRoutineX(true);
+}
+//----------------------------------------------
+
+void SlowTimerRoutineX(bool TimerExec)
+{
 	if (!SlowSemaphore)
 	{
 		SlowSemaphore = true;
-		SERIAL_UpdateReadBuffer();
+		SERIAL_UpdateReadBuffer(TimerExec);
 		DEVPROFILE_ProcessRequests();
 		SlowSemaphore = false;
 	}
@@ -124,7 +142,7 @@ void CONTROL_RequestDPC(FUNC_AsyncDelegate Action)
 void CONTROL_Idle()
 {
 	// Handle serial communication
-	SlowTimerRoutine(NULL, false);
+	SlowTimerRoutineX(false);
 
 	// Handle PicoScope data request
 	CONTROL_HandleSamplerData();
@@ -230,6 +248,7 @@ void CONTROL_HandleSamplerData()
 				
 				CONTROL_SetDeviceState(DS_None);
 			}
+			CONTROL_DeleteRS232Timer();
 		}
 	}
 }
@@ -276,6 +295,8 @@ bool CONTROL_DispatchAction(uint16_t ActionID, uint16_t* UserError)
 				InfoPrint(IP_Info, "Start test request");
 				if(CONTROL_State == DS_None)
 				{
+					CONTROL_AddRS232Timer();
+
 					PICO_STATUS status = LOGIC_PicoScopeActivate();
 					if (status == PICO_OK)
 					{

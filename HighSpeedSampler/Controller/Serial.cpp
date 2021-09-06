@@ -60,7 +60,7 @@ bool SERIAL_Init(uint8_t PortNum, DWORD PortBR)
 		timeouts.ReadTotalTimeoutMultiplier = 0;
 
 		timeouts.WriteTotalTimeoutConstant = SERIAL_WRITE_TIMEOUT;
-		timeouts.WriteTotalTimeoutMultiplier = 1;
+		timeouts.WriteTotalTimeoutMultiplier = 0;
 				
 		if (!SetCommTimeouts(hSerial, &timeouts))
 			throw 0;
@@ -86,7 +86,7 @@ void SERIAL_Purge()
 }
 //----------------------------------------------
 
-void SERIAL_UpdateReadBuffer()
+void SERIAL_UpdateReadBuffer(bool TimerExec)
 {
 	if (hSerial != NULL && SerialReadBufferCounter < SERIAL_BUFFER_LEN)
 	{
@@ -106,9 +106,9 @@ void SERIAL_UpdateReadBuffer()
 				}
 			} while (dwBytesRead && SerialReadBufferCounter < SERIAL_BUFFER_LEN);
 			
-			if (DataRx)
+			if (DataRx && TimerExec)
 				Sleep(1);
-
+			
 		} while (DataRx);
 	}
 }
@@ -119,15 +119,15 @@ void SERIAL_SendArray16(uint16_t* Buffer, uint16_t BufferSize)
 	if (hSerial != NULL)
 	{
 		DWORD dwBytesWritten;
-		uint8_t byte[2];
+		uint8_t byte[SERIAL_BUFFER_LEN] = {0};
 		uint16_t i;
 
-		for (i = 0; i < BufferSize; ++i)
+		for (i = 0; i < BufferSize && i < (SERIAL_BUFFER_LEN - 1) / 2; ++i)
 		{
-			byte[0] = Buffer[i] >> 8;
-			byte[1] = Buffer[i] & 0xFF;
-			WriteFile(hSerial, byte, 2, &dwBytesWritten, NULL);
+			byte[i * 2] = Buffer[i] >> 8;
+			byte[i * 2 + 1] = Buffer[i] & 0xFF;
 		}
+		WriteFile(hSerial, byte, BufferSize * 2, &dwBytesWritten, NULL);
 	}
 }
 //----------------------------------------------

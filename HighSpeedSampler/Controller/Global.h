@@ -42,10 +42,10 @@
 #define TRIGGER_LEVEL				2000				// In ticks of 16bit range, signed value
 //
 // Serial port
-#define TIMER_FAST_PERIOD			10
-#define TIMER_SLOW_PERIOD			20
+#define TIMER_FAST_PERIOD			20
+#define TIMER_SLOW_PERIOD			50
 #define SERIAL_READ_TIMEOUT			0					// Read timeout constant (in ms)
-#define SERIAL_WRITE_TIMEOUT		50					// Write timeout constant (in ms)
+#define SERIAL_WRITE_TIMEOUT		0					// Write timeout constant (in ms)
 #define SERIAL_BUFFER_LEN			64
 //
 // Calculation
