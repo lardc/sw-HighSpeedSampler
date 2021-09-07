@@ -278,7 +278,7 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 		Buffer[i] = (uint16_t)((int16_t)SrcBuffer[i * dsRatio]);
 
 	if (SampleTimeSteps)
-		*SampleTimeSteps = Counter;
+		*SampleTimeSteps = dsRatio;
 
 	return i;
 }
