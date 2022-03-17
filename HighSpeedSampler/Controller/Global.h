@@ -54,5 +54,9 @@
 #define OSV_RISE_DETECT_V			-5.0f				// Voltage rise detect (in V)
 #define MUL_FACTOR_I				4					// Scope range multiply factor (I)
 #define MUL_FACTOR_V				2					// Scope range multiply factor (V)
+//
+// V/I endpoints multiplication
+#define EP_VOLTAGE_MUL				1
+#define EP_CURRENT_MUL				10
 
 #endif	// __GLOBAL_H__

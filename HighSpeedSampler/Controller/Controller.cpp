@@ -225,7 +225,7 @@ void CONTROL_HandleSamplerData()
 														 (DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true, &Index0V);
 			CalcOK = (CalcProblem == PROBLEM_NONE) ? true : false;
 
-			DataTable[REG_RESULT_IRR] =		(uint16_t)Irr;
+			DataTable[REG_RESULT_IRR] =		(uint16_t)(Irr * 10);
 			DataTable[REG_RESULT_TRR] =		(uint16_t)(trr * 10);
 			DataTable[REG_RESULT_QRR] =		(uint16_t)Qrr;
 			DataTable[REG_RESULT_ZERO] =	(uint16_t)(Index0 * SAMPLING_TIME_FRACTION * 10);
