@@ -220,16 +220,14 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					sprintf_s(message, 256, "Idc: %.1f", *Id);
 					InfoPrint(IP_Info, message);
 
-					// Calculate Vd
-					*Vd = CALC_Vd(MEMBUF_fScopeVFiltered, SAMPLING_SAMPLES);
-
-					sprintf_s(message, 256, "Vd: %.1f", *Vd);
-					InfoPrint(IP_Info, message);
-
 					// Calculate voltage zero crossing
 					if (UseVoltage)
 					{
-						if (!CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V))
+						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd);
+						sprintf_s(message, 256, "Vd: %.1f", *Vd);
+						InfoPrint(IP_Info, message);
+
+						if (!ZeroCrossingCalcOK)
 							throw PROBLEM_CALC_VZ;
 
 						sprintf_s(message, 256, "Index V0: %d", Index_0V);

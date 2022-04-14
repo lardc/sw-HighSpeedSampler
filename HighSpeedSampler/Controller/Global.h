@@ -50,8 +50,7 @@
 //
 // Calculation
 #define IRR_SEARCH_WND				800					// Search window for minimum value
-#define OSV_FALL_DETECT_V			-50.0f				// Voltage fall detect (in V)
-#define OSV_RISE_DETECT_V			-5.0f				// Voltage rise detect (in V)
+#define OSV_PEAK_DETECT_V			50.0f				// Off-state minimum voltage (in V)
 #define MUL_FACTOR_I				4					// Scope range multiply factor (I)
 #define MUL_FACTOR_V				2					// Scope range multiply factor (V)
 //

@@ -144,40 +144,30 @@ float CALC_Id(float* Buffer, uint32_t t0)
 }
 //----------------------------------------------
 
-float CALC_Vd(float* Buffer, uint32_t BufferLength)
+bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex, float* Vd)
 {
-	uint32_t i;
-	float Vd;
+	int32_t i, Vdmax_index = 0;
 
-	// Find Vd_max
-	Vd = Buffer[0];
-	for (i = 1; i < BufferLength; ++i)
-		if (Buffer[i] > Vd) Vd = Buffer[i];
-
-	return Vd;
-}
-//----------------------------------------------
-
-bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex)
-{
-	uint32_t i, index = BufferLength;
-	bool StartCrossingSearch = false, CalcOK = false;
-
-	for (i = 0; i < BufferLength; ++i)
-	{
-		if (StartCrossingSearch)
+	// Find Vd max
+	float Vdmax = Buffer[0];
+	for (i = 1; i < (int32_t)BufferLength; ++i)
+		if (Buffer[i] > Vdmax)
 		{
-			if (Buffer[i] > OSV_RISE_DETECT_V)
-			{
-				CalcOK = true;
-				*CrossingIndex = i;
-				break;
-			}
+			Vdmax = Buffer[i];
+			Vdmax_index = i;
 		}
-		else if (Buffer[i] < OSV_FALL_DETECT_V)
-			StartCrossingSearch = true;
-	}
+	*Vd = Vdmax;
 
-	return CalcOK;
+	if (Vdmax > OSV_PEAK_DETECT_V && Vdmax_index != 0)
+	{
+		for (i = Vdmax_index; i >= 0; --i)
+			if (Buffer[i] < 0)
+			{
+				*CrossingIndex = i;
+				return true;
+			}
+	}
+	
+	return false;
 }
 //----------------------------------------------
