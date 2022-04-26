@@ -11,6 +11,7 @@
 //
 #include <stdint.h>
 #include "DeviceObjectDictionary.h"
+#include "..\Controller\Global.h"
 
 #define NO		0	// equal to false
 #define YES		1	// equal to true
@@ -152,7 +153,7 @@ const TableItemConstraint NVConstraint[DATA_TABLE_NV_SIZE] =
 const TableItemConstraint VConstraint[DATA_TABLE_WP_START - DATA_TABLE_WR_START] =
 									 {
 										   {CURRENT_AMPL_MIN, CURRENT_AMPL_MAX, CURRENT_AMPL_DEF},					// 128
-										   {MODE_QRR, MODE_QRR_TQ, MODE_QRR},										// 129
+										   {MODE_QRR, SCOPE_CURRENT_ONLY ? MODE_QRR : MODE_QRR_TQ, MODE_QRR},		// 129
 										   {NO, YES, NO},															// 130
 										   {VOLTAGE_AMPL_MIN, VOLTAGE_AMPL_MAX, VOLTAGE_AMPL_DEF},					// 131
 										   {0, 0, 0},																// 132

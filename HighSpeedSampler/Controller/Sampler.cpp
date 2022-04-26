@@ -14,12 +14,6 @@ static int16_t VHandler, IHandler;
 static bool SamplingVDone = false, SamplingIDone = false;
 static PS5000A_RANGE SavedVRange = SAMPLING_DEFAULT_RANGE, SavedIRange = SAMPLING_DEFAULT_RANGE;
 
-// Forward functions
-//
-PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler);
-PICO_STATUS SAMPLER_ConfigureChannelsX(int16_t Handler, PS5000A_RANGE Range);
-float SAMPLER_GetRangeCoeff(PS5000A_RANGE Range);
-
 // Functions
 //
 PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler, PICO_STATUS *OpenStatus)
@@ -52,12 +46,15 @@ PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler, PICO_STATU
 }
 //----------------------------------------------
 
+#pragma warning( push )
+#pragma warning( disable : 6286 )
+
 PICO_STATUS SAMPLER_Open(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent, PICO_STATUS *VOpenStatus, PICO_STATUS *IOpenStatus)
 {
 	PICO_STATUS ret_val = PICO_OK;
-	VHandler = IHandler = 0;
+	VHandler = IHandler = -1;
 
-	if ((ret_val = SAMPLER_OpenX(ScopeSerialVoltage, &VHandler, VOpenStatus)) == PICO_OK)
+	if (SCOPE_CURRENT_ONLY || (ret_val = SAMPLER_OpenX(ScopeSerialVoltage, &VHandler, VOpenStatus)) == PICO_OK)
 		ret_val = SAMPLER_OpenX(ScopeSerialCurrent, &IHandler, IOpenStatus);
 
 	return ret_val;
@@ -77,7 +74,7 @@ PICO_STATUS SAMPLER_ConfigureSamplingRate()
 		return PICO_OK;
 
 	PICO_STATUS ret_val = PICO_OK;
-	if ((ret_val = ps5000aGetTimebase(VHandler, SAMPLING_TIME_BASE, SAMPLING_SAMPLES, NULL, NULL, 0)) == PICO_OK)
+	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aGetTimebase(VHandler, SAMPLING_TIME_BASE, SAMPLING_SAMPLES, NULL, NULL, 0)) == PICO_OK)
 		ret_val = ps5000aGetTimebase(IHandler, SAMPLING_TIME_BASE, SAMPLING_SAMPLES, NULL, NULL, 0);
 
 	return ret_val;
@@ -90,7 +87,7 @@ PICO_STATUS SAMPLER_ConfigureTrigger()
 		return PICO_OK;
 
 	PICO_STATUS ret_val = PICO_OK;
-	if ((ret_val = ps5000aSetSimpleTrigger(VHandler, 1, TRIGGER_SOURCE, TRIGGER_LEVEL, TRIGGER_MODE, 0, 0)) == PICO_OK)
+	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aSetSimpleTrigger(VHandler, 1, TRIGGER_SOURCE, TRIGGER_LEVEL, TRIGGER_MODE, 0, 0)) == PICO_OK)
 		ret_val = ps5000aSetSimpleTrigger(IHandler, 1, TRIGGER_SOURCE, TRIGGER_LEVEL, TRIGGER_MODE, 0, 0);
 
 	return ret_val;
@@ -201,7 +198,7 @@ PICO_STATUS SAMPLER_Close()
 		return PICO_OK;
 
 	PICO_STATUS ret_val = PICO_OK;
-	if ((ret_val = ps5000aCloseUnit(VHandler)) == PICO_OK)
+	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aCloseUnit(VHandler)) == PICO_OK)
 		ret_val = ps5000aCloseUnit(IHandler);
 
 	return ret_val;
@@ -228,7 +225,7 @@ PICO_STATUS SAMPLER_ConfigureChannels(PS5000A_RANGE VRange, PS5000A_RANGE IRange
 	SavedVRange = VRange;
 	SavedIRange = IRange;
 
-	if ((ret_val = SAMPLER_ConfigureChannelsX(VHandler, VRange)) == PICO_OK)
+	if (SCOPE_CURRENT_ONLY || (ret_val = SAMPLER_ConfigureChannelsX(VHandler, VRange)) == PICO_OK)
 		ret_val = SAMPLER_ConfigureChannelsX(IHandler, IRange);
 
 	return ret_val;
@@ -255,7 +252,11 @@ PICO_STATUS SAMPLER_ActivateSampling()
 	PICO_STATUS ret_val = PICO_OK;
 	SamplingVDone = SamplingIDone = false;
 
-	if ((ret_val = ps5000aRunBlock(VHandler, 0, SAMPLING_SAMPLES, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL)) == PICO_OK)
+	if (SCOPE_CURRENT_ONLY)
+		SamplingVDone = true;
+
+	if (SCOPE_CURRENT_ONLY ||
+		(ret_val = ps5000aRunBlock(VHandler, 0, SAMPLING_SAMPLES, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL)) == PICO_OK)
 		ret_val = ps5000aRunBlock(IHandler, 0, SAMPLING_SAMPLES, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL);
 
 	return ret_val;
@@ -274,7 +275,8 @@ PICO_STATUS SAMPLER_ConnectOutputBuffers(short *BufferI, unsigned int BufferILen
 		return PICO_OK;
 
 	PICO_STATUS ret_val = PICO_OK;
-	if ((ret_val = ps5000aSetDataBuffer(VHandler, SAMPLING_ACTIVE_CHANNEL, BufferV, BufferVLength, 0, PS5000A_RATIO_MODE_NONE)) == PICO_OK)
+	if (SCOPE_CURRENT_ONLY ||
+		(ret_val = ps5000aSetDataBuffer(VHandler, SAMPLING_ACTIVE_CHANNEL, BufferV, BufferVLength, 0, PS5000A_RATIO_MODE_NONE)) == PICO_OK)
 		ret_val = ps5000aSetDataBuffer(IHandler, SAMPLING_ACTIVE_CHANNEL, BufferI, BufferILength, 0, PS5000A_RATIO_MODE_NONE);
 
 	return ret_val;
@@ -290,7 +292,7 @@ PICO_STATUS SAMPLER_GetValues(unsigned int *noOfSamples)
 	}
 
 	PICO_STATUS ret_val = PICO_OK;
-	if ((ret_val = ps5000aGetValues(VHandler, 0, noOfSamples, 0, PS5000A_RATIO_MODE_NONE, 0, NULL)) == PICO_OK)
+	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aGetValues(VHandler, 0, noOfSamples, 0, PS5000A_RATIO_MODE_NONE, 0, NULL)) == PICO_OK)
 		ret_val = ps5000aGetValues(IHandler, 0, noOfSamples, 0, PS5000A_RATIO_MODE_NONE, 0, NULL);
 
 	return ret_val;
@@ -303,9 +305,11 @@ PICO_STATUS SAMPLER_Stop()
 		return PICO_OK;
 
 	PICO_STATUS ret_val = PICO_OK;
-	if ((ret_val = ps5000aStop(VHandler)) == PICO_OK)
+	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aStop(VHandler)) == PICO_OK)
 		ret_val = ps5000aStop(IHandler);
 
 	return ret_val;
 }
 //----------------------------------------------
+
+#pragma warning( pop )

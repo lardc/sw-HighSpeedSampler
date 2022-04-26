@@ -147,6 +147,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
 					MEMBUF_fScopeI[i] = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i] * Kfine) / (INT16_MAX * ShuntResCache * 0.001f) + Offset;
 
+				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
+				SPLINE_Apply(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
+
 				// Convert to voltage
 				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
 				Kfine = (float)DataTable[REG_V_FINE_N] / DataTable[REG_V_FINE_D];
@@ -156,16 +159,14 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; Kfine: %.3f; Offset: %.1f", SAMPLER_GetSavedVRange(), SAMPLER_GetVRangeCoeff(), Kfine, Offset);
 				InfoPrint(IP_Info, message);
 
-				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
-					MEMBUF_fScopeV[i] = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX) + Offset;
+				if (!SCOPE_CURRENT_ONLY)
+				{
+					for (i = 0; i < MEMBUF_Scope_Counter; ++i)
+						MEMBUF_fScopeV[i] = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX) + Offset;
 
-				// FIR filter
-				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
-				FIR_Apply(MEMBUF_fScopeV, MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
-
-				// Spline filter
-				SPLINE_Apply(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
-				SPLINE_Apply(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
+					FIR_Apply(MEMBUF_fScopeV, MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
+					SPLINE_Apply(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
+				}
 
 				// Main calculations
 				try
@@ -221,7 +222,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					// Calculate voltage zero crossing
-					if (UseVoltage)
+					if (UseVoltage && !SCOPE_CURRENT_ONLY)
 					{
 						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd);
 						sprintf_s(message, 256, "Vd: %.1f", *Vd);

@@ -21,6 +21,8 @@
 #define EP_WRITE_COUNT				1
 #define DIAG_EMULATE_SCOPES			false
 //
+#define SCOPE_CURRENT_ONLY			true				// Use single oscilloscope for current channel
+//
 // Measurement mode
 #define MODE_QRR					0
 #define MODE_QRR_TQ					1
