@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CB230CEF-791D-4FC0-A937-2D7D0E9F00D4}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>HighSpeedSampler</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>d:\proton\Test equipment\QRR Tester\QSU\PC Soft\HighSpeedSampler\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>External\ps5000a.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /f /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>6387;26812</DisableSpecificWarnings>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>External\ps5000a.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /f /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config" &amp;&amp; xcopy /f /y "$(ProjectDir)HighSpeedSampler.cmd" "$(OutDir)HighSpeedSampler.cmd"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="Controller\Controller.h" />
+    <ClInclude Include="Controller\Global.h" />
+    <ClInclude Include="Controller\Info.h" />
+    <ClInclude Include="Controller\Logic.h" />
+    <ClInclude Include="Controller\Math\Calculate.h" />
+    <ClInclude Include="Controller\Math\FIR.h" />
+    <ClInclude Include="Controller\Math\SplineFilter.h" />
+    <ClInclude Include="Controller\Memory.h" />
+    <ClInclude Include="Controller\Sampler.h" />
+    <ClInclude Include="Controller\Serial.h" />
+    <ClInclude Include="External\Chameleon.h" />
+    <ClInclude Include="External\ConfigFile.h" />
+    <ClInclude Include="Interface\CRC16.h" />
+    <ClInclude Include="Interface\SCCIParams.h" />
+    <ClInclude Include="Interface\SCCISlave.h" />
+    <ClInclude Include="Interface\SCCITypes.h" />
+    <ClInclude Include="Interface\xCCICommon.h" />
+    <ClInclude Include="Interface\xCCIParams.h" />
+    <ClInclude Include="Platform\Constraints.h" />
+    <ClInclude Include="Platform\DataTable.h" />
+    <ClInclude Include="Platform\DeviceObjectDictionary.h" />
+    <ClInclude Include="Platform\DeviceProfile.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="VendorLib\PicoStatus.h" />
+    <ClInclude Include="VendorLib\ps5000aApi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Controller\Controller.cpp" />
+    <ClCompile Include="Controller\Info.cpp" />
+    <ClCompile Include="Controller\Logic.cpp" />
+    <ClCompile Include="Controller\Math\Calculate.cpp" />
+    <ClCompile Include="Controller\Math\FIR.cpp" />
+    <ClCompile Include="Controller\Math\SplineFilter.cpp" />
+    <ClCompile Include="Controller\Memory.cpp" />
+    <ClCompile Include="Controller\Sampler.cpp" />
+    <ClCompile Include="Controller\Serial.cpp" />
+    <ClCompile Include="External\Chameleon.cpp" />
+    <ClCompile Include="External\ConfigFile.cpp" />
+    <ClCompile Include="HighSpeedSampler.cpp" />
+    <ClCompile Include="Interface\CRC16.cpp" />
+    <ClCompile Include="Interface\SCCISlave.cpp" />
+    <ClCompile Include="Interface\xCCICommon.cpp" />
+    <ClCompile Include="Platform\Constraints.cpp" />
+    <ClCompile Include="Platform\DataTable.cpp" />
+    <ClCompile Include="Platform\DeviceProfile.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="HighSpeedSampler.cmd" />
+    <None Include="HighSpeedSampler.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="HighSpeedSampler.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

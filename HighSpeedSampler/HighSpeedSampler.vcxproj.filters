@@ -1,0 +1,183 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Interface">
+      <UniqueIdentifier>{dbb08b7c-1f88-4d66-bd8e-46fd7f189d90}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{9ec2265f-cdc7-487a-b91c-17df19afb46d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controller">
+      <UniqueIdentifier>{8bea931a-27ba-4b9c-bfad-0d0fa8b8b1e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="External">
+      <UniqueIdentifier>{f3ef9c88-1e1a-4cc8-a30e-6eaef46320d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Controller\Math">
+      <UniqueIdentifier>{ad8b5ddf-465c-46b7-8caf-a7af8ef81634}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VendorLib\PicoStatus.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="VendorLib\ps5000aApi.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\CRC16.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\SCCIParams.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\SCCISlave.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\SCCITypes.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\xCCICommon.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Interface\xCCIParams.h">
+      <Filter>Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\Constraints.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\DataTable.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\DeviceObjectDictionary.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\DeviceProfile.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Global.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Sampler.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Controller.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="External\Chameleon.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="External\ConfigFile.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Serial.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Memory.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Math\FIR.h">
+      <Filter>Controller\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Math\Calculate.h">
+      <Filter>Controller\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Logic.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Info.h">
+      <Filter>Controller</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller\Math\SplineFilter.h">
+      <Filter>Controller\Math</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HighSpeedSampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface\SCCISlave.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface\xCCICommon.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Interface\CRC16.cpp">
+      <Filter>Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\Constraints.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\DataTable.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\DeviceProfile.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller\Sampler.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller\Controller.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="External\Chameleon.cpp">
+      <Filter>External</Filter>
+    </ClCompile>
+    <ClCompile Include="External\ConfigFile.cpp">
+      <Filter>External</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller\Serial.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller\Memory.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller\Math\FIR.cpp">
+      <Filter>Controller\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller\Math\Calculate.cpp">
+      <Filter>Controller\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller\Logic.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller\Info.cpp">
+      <Filter>Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller\Math\SplineFilter.cpp">
+      <Filter>Controller\Math</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="HighSpeedSampler.config" />
+    <None Include="HighSpeedSampler.cmd" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="HighSpeedSampler.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
