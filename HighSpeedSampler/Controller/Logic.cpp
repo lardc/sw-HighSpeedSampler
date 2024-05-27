@@ -173,7 +173,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 }
 // ----------------------------------------
 
-uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize, bool CalcOK, uint32_t Index0, uint32_t MulFactor, uint32_t ForceSectorRead)
+uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize, bool CalcOK, uint32_t Index0, uint32_t MulFactor, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps)
 {
 	uint16_t i = 0;
 	uint16_t dsRatio, Counter;
@@ -197,19 +197,22 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 	for (i = 0; i < Counter; ++i)
 		Buffer[i] = (uint16_t)((int16_t)SrcBuffer[i * dsRatio]);
 
+	if (SampleTimeSteps)
+		*SampleTimeSteps = dsRatio;
+
 	return i;
 }
 // ----------------------------------------
 
-uint16_t LOGIC_GetIData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK, bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead)
+uint16_t LOGIC_GetIData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK, bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps)
 {
-	return LOGIC_GetXData(MEMBUF_fScopeIFiltered, Buffer, BufferSize, CalcOK, ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V, ForceSectorRead);
+	return LOGIC_GetXData(MEMBUF_fScopeIFiltered, Buffer, BufferSize, CalcOK, ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V, ForceSectorRead, SampleTimeSteps);
 }
 // ----------------------------------------
 
-uint16_t LOGIC_GetVData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK, bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead)
+uint16_t LOGIC_GetVData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK, bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps)
 {
-	return LOGIC_GetXData(MEMBUF_fScopeVFiltered, Buffer, BufferSize, CalcOK, ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V, ForceSectorRead);
+	return LOGIC_GetXData(MEMBUF_fScopeVFiltered, Buffer, BufferSize, CalcOK, ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V, ForceSectorRead, SampleTimeSteps);
 }
 // ----------------------------------------
 
