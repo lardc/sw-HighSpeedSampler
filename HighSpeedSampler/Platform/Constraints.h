@@ -28,9 +28,9 @@ typedef struct __TableItemConstraint
 #define X_D_DEF2				1000
 #define X_D_DEF3				10000
 //
-#define CURRENT_AMPL_MIN		10		// in A
-#define CURRENT_AMPL_MAX		500		// in A
-#define CURRENT_AMPL_DEF		200		// in A
+#define CURRENT_AMPL_MIN		320		// in A
+#define CURRENT_AMPL_MAX		3200	// in A
+#define CURRENT_AMPL_DEF		2000	// in A
 //
 #define VOLTAGE_AMPL_MIN		100		// in V
 #define VOLTAGE_AMPL_MAX		4500	// in V
