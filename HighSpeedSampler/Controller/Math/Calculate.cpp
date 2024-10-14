@@ -14,6 +14,7 @@ bool CALC_IrrAndZeroCrossingIndex(float* Buffer, uint32_t BufferLength, uint32_t
 {
 	uint32_t i, Imin_index;
 	float Imin;
+	*CrossingIndex = 0;
 
 	// Find zero crossing index
 	for (i = 0; i < BufferLength; ++i)
@@ -23,6 +24,13 @@ bool CALC_IrrAndZeroCrossingIndex(float* Buffer, uint32_t BufferLength, uint32_t
 			*CrossingIndex = i;
 			break;
 		}
+	}
+
+	//  
+	if (*CrossingIndex == 0)
+	{
+		*IrrIndex = 0;
+		return false;
 	}
 
 	// Find reverse current
