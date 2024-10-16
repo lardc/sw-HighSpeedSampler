@@ -67,12 +67,13 @@
 #define REG_DF_REASON_EX			200	// Fault or disable extended reason
 #define REG_RESULT_IRR				201	// Reverse recovery current amplitude (in A)
 #define REG_RESULT_TRR				202	// Reverse recovery time (in us x10)
-#define REG_RESULT_QRR				203	// Reverse recovery charge (in uQ)
+#define REG_RESULT_QRR				203	// Reverse recovery charge (in uQ x10)
 #define REG_RESULT_ZERO				204	// Zero-cross time (in us x10)
 #define REG_RESULT_ZERO_V			205	// Zero-cross time for on-state voltage (in us x10)
 #define REG_RESULT_DIDT				206	// Actual value of dIdt (in A/us x10)
 #define REG_RESULT_ID				207	// Direct current amplitude (in A)
 #define REG_RESULT_VD				208	// Direct voltage amplitude (in V)
+#define REG_RESULT_QRR_B32			209	// Reverse recovery charge (in uQ x10) 32bit part
 //
 #define REG_EP_ELEMENTARY_FRACT		220	// Elementary fraction length in ns
 #define REG_EP_STEP_FRACTION_CNT	221	// Number of elementary fractions in the EP single step
