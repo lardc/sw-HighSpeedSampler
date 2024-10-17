@@ -65,7 +65,7 @@
 #define REG_OP_RESULT				197	// Operation result
 //
 #define REG_DF_REASON_EX			200	// Fault or disable extended reason
-#define REG_RESULT_IRR				201	// Reverse recovery current amplitude (in A)
+#define REG_RESULT_IRR				201	// Reverse recovery current amplitude (in A x10)
 #define REG_RESULT_TRR				202	// Reverse recovery time (in us x10)
 #define REG_RESULT_QRR				203	// Reverse recovery charge (in uQ x10)
 #define REG_RESULT_ZERO				204	// Zero-cross time (in us x10)
