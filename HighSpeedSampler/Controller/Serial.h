@@ -1,4 +1,4 @@
-﻿#ifndef __SERIAL_H__
+#ifndef __SERIAL_H__
 #define __SERIAL_H__
 
 // Includes

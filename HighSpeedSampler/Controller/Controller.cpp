@@ -1,4 +1,4 @@
-﻿// Headers
+// Headers
 //
 #include "stdafx.h"
 #include "Controller.h"
@@ -7,13 +7,13 @@
 //
 #include <windows.h>
 #include "Global.h"
-#include "Platform\DataTable.h"
-#include "Platform\DeviceProfile.h"
-#include "Platform\DeviceObjectDictionary.h"
-#include "Controller\Serial.h"
-#include "Controller\Memory.h"
-#include "Controller\Logic.h"
-#include "Controller\Info.h"
+#include "DataTable.h"
+#include "DeviceProfile.h"
+#include "DeviceObjectDictionary.h"
+#include "Serial.h"
+#include "Memory.h"
+#include "Logic.h"
+#include "Info.h"
 
 // Definitions
 //

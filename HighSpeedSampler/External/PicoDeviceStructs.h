@@ -1,4 +1,4 @@
-﻿#ifndef __PICO_DEVICE_STRUCTS_H__
+#ifndef __PICO_DEVICE_STRUCTS_H__
 #define __PICO_DEVICE_STRUCTS_H__
 
 #include <stdint.h>

@@ -1,4 +1,4 @@
-﻿// -----------------------------------------
+// -----------------------------------------
 // Device profile
 // ----------------------------------------
 
@@ -9,13 +9,13 @@
 
 // Includes
 //
-#include "Controller\Global.h"
-#include "Controller\Controller.h"
+#include "Global.h"
+#include "Controller.h"
 #include "DeviceObjectDictionary.h"
 #include "DataTable.h"
-#include "Platform\Constraints.h"
+#include "Constraints.h"
 #include <string.h>
-#include "Controller\Serial.h"
+#include "Serial.h"
 
 // Types
 //

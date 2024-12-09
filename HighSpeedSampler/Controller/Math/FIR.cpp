@@ -1,4 +1,4 @@
-﻿// Headers
+// Headers
 //
 #include "stdafx.h"
 #include "FIR.h"

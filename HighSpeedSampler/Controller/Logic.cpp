@@ -1,4 +1,4 @@
-﻿// Headers
+// Headers
 //
 #include "stdafx.h"
 #include "Logic.h"
@@ -8,11 +8,11 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "Controller\Global.h"
-#include "Controller\Math\Calculate.h"
-#include "Controller\Math\FIR.h"
-#include "Platform\DataTable.h"
-#include "Platform\DeviceObjectDictionary.h"
+#include "Global.h"
+#include "Calculate.h"
+#include "FIR.h"
+#include "DataTable.h"
+#include "DeviceObjectDictionary.h"
 #include "Info.h"
 
 // Variables

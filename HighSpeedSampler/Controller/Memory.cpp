@@ -1,4 +1,4 @@
-﻿// Headers
+// Headers
 //
 #include "stdafx.h"
 #include "Memory.h"

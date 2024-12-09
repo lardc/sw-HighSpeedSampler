@@ -1,4 +1,4 @@
-﻿// ConfigFile.h
+// ConfigFile.h
 #pragma once
 
 #ifndef __CONFIG_FILE_H__

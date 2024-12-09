@@ -1,11 +1,11 @@
-﻿#ifndef __SAMPLER_H__
+#ifndef __SAMPLER_H__
 #define __SAMPLER_H__
 
 // Includes
 //
 #include <stdint.h>
-#include "External\PicoStatus.h"
-#include "External\ps5000aApi.h"
+#include "PicoStatus.h"
+#include "ps5000aApi.h"
 
 // Functions
 //
