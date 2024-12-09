@@ -68,6 +68,9 @@
 #define REG_RESULT_ZERO_V			205	// Zero-cross time for on-state voltage (in us x10)
 #define REG_RESULT_DIDT				206	// Actual value of dIdt (in A/us x10)
 //
+#define REG_EP_ELEMENTARY_FRACT		220	// Elementary fraction length in ns
+#define REG_EP_STEP_FRACTION_CNT	221	// Number of elementary fractions in the EP single step
+//
 #define REG_SP__3					255
 
 
