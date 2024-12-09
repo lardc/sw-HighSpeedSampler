@@ -1,4 +1,4 @@
-﻿// Headers
+// Headers
 //
 #include "stdafx.h"
 #include "Calculate.h"
@@ -6,7 +6,7 @@
 // Includes
 //
 #include <math.h>
-#include "Controller\Global.h"
+#include "Global.h"
 
 // Functions
 //
@@ -29,15 +29,13 @@ bool CALC_IrrAndZeroCrossingIndex(float* Buffer, uint32_t BufferLength, uint32_t
 	Imin = Buffer[*CrossingIndex];
 	Imin_index = *CrossingIndex;
 
-	for (i = *CrossingIndex; (i < BufferLength) && (i < ((*CrossingIndex) * 3)); ++i)
+	for (i = *CrossingIndex; i < BufferLength && i < *CrossingIndex * 2; ++i)
 	{
 		if (Buffer[i] < Imin)
 		{
 			Imin = Buffer[i];
 			Imin_index = i;
 		}
-		else if ((i - Imin_index) > IRR_SEARCH_WND)
-			break;
 	}
 
 	if (Imin >= 0)
@@ -105,6 +103,7 @@ bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, flo
 		if (Buffer[i] > Idc) Idc = Buffer[i];
 
 	// Find Id_half
+	Id_half = 0;
 	for (i = 0; i < t0; ++i)
 	{
 		if (Buffer[i] <= (Idc / 2))
@@ -116,6 +115,7 @@ bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, flo
 	if (i == t0) return false;
 
 	// Find Ir_half
+	Ir_half = t0;
 	for (i = t0; i < trr; ++i)
 	{
 		if (Buffer[i] <= (Buffer[trr] / 2))
