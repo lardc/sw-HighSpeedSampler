@@ -1,4 +1,4 @@
-﻿// -----------------------------------------
+// -----------------------------------------
 // Device profile
 // ----------------------------------------
 
@@ -8,7 +8,7 @@
 // Include
 #include <stdint.h>
 //
-#include "Interface\SCCISlave.h"
+#include "SCCISlave.h"
 
 
 // Functions

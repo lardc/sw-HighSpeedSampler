@@ -1,4 +1,4 @@
-﻿/**************************************************************************
+/**************************************************************************
 *
 * Filename:    PicoConnectProbes.h
 * Author:      MAS
@@ -7,7 +7,7 @@
 * This header defines enumerations relating to PicoConnect (TM)
 * probes and the corresponding voltage/current ranges.
 *
-* Copyright © 2016-2018 Pico Technology Ltd. All rights reserved.
+* Copyright � 2016-2018 Pico Technology Ltd. All rights reserved.
 *
 *************************************************************************/
 #ifndef __PICOCONNECTPROBES_H__

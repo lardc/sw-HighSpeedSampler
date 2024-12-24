@@ -14,12 +14,13 @@
     <ProjectGuid>{CB230CEF-791D-4FC0-A937-2D7D0E9F00D4}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>HighSpeedSampler</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -44,6 +45,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>$(ProjectDir);$(ProjectDir)Controller;$(ProjectDir)Platform;$(ProjectDir)Controller\Math;$(ProjectDir)Interface;$(ProjectDir)External;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -72,8 +74,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>6387;26812</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>D:\proton\Test equipment\Qrr tq\QSU\PC Soft\Version 1.0\HighSpeedSampler;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -83,7 +84,7 @@
       <AdditionalDependencies>External\ps5000a.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /f /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config" &amp;&amp; xcopy /f /y "$(ProjectDir)HighSpeedSampler.cmd" "$(OutDir)HighSpeedSampler.cmd"</Command>
+      <Command>xcopy /f /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -93,12 +94,13 @@
     <ClInclude Include="Controller\Logic.h" />
     <ClInclude Include="Controller\Math\Calculate.h" />
     <ClInclude Include="Controller\Math\FIR.h" />
-    <ClInclude Include="Controller\Math\SplineFilter.h" />
     <ClInclude Include="Controller\Memory.h" />
     <ClInclude Include="Controller\Sampler.h" />
     <ClInclude Include="Controller\Serial.h" />
     <ClInclude Include="External\Chameleon.h" />
     <ClInclude Include="External\ConfigFile.h" />
+    <ClInclude Include="External\PicoStatus.h" />
+    <ClInclude Include="External\ps5000aApi.h" />
     <ClInclude Include="Interface\CRC16.h" />
     <ClInclude Include="Interface\SCCIParams.h" />
     <ClInclude Include="Interface\SCCISlave.h" />
@@ -109,11 +111,8 @@
     <ClInclude Include="Platform\DataTable.h" />
     <ClInclude Include="Platform\DeviceObjectDictionary.h" />
     <ClInclude Include="Platform\DeviceProfile.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="VendorLib\PicoStatus.h" />
-    <ClInclude Include="VendorLib\ps5000aApi.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Controller\Controller.cpp" />
@@ -121,7 +120,6 @@
     <ClCompile Include="Controller\Logic.cpp" />
     <ClCompile Include="Controller\Math\Calculate.cpp" />
     <ClCompile Include="Controller\Math\FIR.cpp" />
-    <ClCompile Include="Controller\Math\SplineFilter.cpp" />
     <ClCompile Include="Controller\Memory.cpp" />
     <ClCompile Include="Controller\Sampler.cpp" />
     <ClCompile Include="Controller\Serial.cpp" />
@@ -140,11 +138,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="HighSpeedSampler.cmd" />
     <None Include="HighSpeedSampler.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="HighSpeedSampler.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

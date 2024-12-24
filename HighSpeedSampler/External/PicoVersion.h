@@ -1,4 +1,4 @@
-﻿#ifndef __PICOVERSION_H__
+#ifndef __PICOVERSION_H__
 #define __PICOVERSION_H__
 
 #include <stdint.h>

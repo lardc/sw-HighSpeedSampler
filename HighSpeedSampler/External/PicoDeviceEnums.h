@@ -1,4 +1,4 @@
-﻿#ifndef __PICO_DEVICE_ENUMS_H__
+#ifndef __PICO_DEVICE_ENUMS_H__
 #define __PICO_DEVICE_ENUMS_H__
 
 typedef enum enPicoRatioMode

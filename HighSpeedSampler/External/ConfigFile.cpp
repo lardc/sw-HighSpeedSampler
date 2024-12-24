@@ -1,4 +1,4 @@
-﻿// ConfigFile.cpp
+// ConfigFile.cpp
 
 #include "stdafx.h"
 #include "ConfigFile.h"

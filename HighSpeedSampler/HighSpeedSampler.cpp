@@ -1,4 +1,4 @@
-﻿// HighSpeedSampler.cpp : Defines the entry point for the console application.
+// HighSpeedSampler.cpp : Defines the entry point for the console application.
 //
 // Headers
 //
@@ -7,10 +7,10 @@
 
 // Includes
 //
-#include "Controller\Serial.h"
-#include "Controller\Controller.h"
-#include "External\ConfigFile.h"
-#include "Controller\Info.h"
+#include "Serial.h"
+#include "Controller.h"
+#include "ConfigFile.h"
+#include "Info.h"
 
 // Functions
 //

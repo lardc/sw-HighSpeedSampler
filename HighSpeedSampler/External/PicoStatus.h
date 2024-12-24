@@ -1,4 +1,4 @@
-﻿/**************************************************************************
+/**************************************************************************
 *
 * Filename:    PicoStatus.h
 * Author:      MAS
@@ -11,7 +11,7 @@
 * data logger API. For example, for the ps5000a API, it stands for
 * "PS5000A" or "ps5000a".
 *
-* Copyright © 2002-2018 Pico Technology Ltd. All rights reserved.
+* Copyright � 2002-2018 Pico Technology Ltd. All rights reserved.
 *
 *************************************************************************/
 #ifndef __PICOSTATUS_H__

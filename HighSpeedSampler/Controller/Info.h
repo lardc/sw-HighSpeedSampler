@@ -1,4 +1,4 @@
-﻿#ifndef __INFO_H__
+#ifndef __INFO_H__
 #define __INFO_H__
 
 // Includes

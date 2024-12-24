@@ -1,4 +1,4 @@
-﻿#ifndef __FIR_H__
+#ifndef __FIR_H__
 #define __FIR_H__
 
 // Includes

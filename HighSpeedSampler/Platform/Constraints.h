@@ -1,4 +1,4 @@
-﻿// -----------------------------------------
+// -----------------------------------------
 // Constraints for tunable parameters
 // ----------------------------------------
 
@@ -9,7 +9,7 @@
 #include <stdint.h>
 //
 #include "DataTable.h"
-#include "Controller\Global.h"
+#include "Global.h"
 
 // Types
 //

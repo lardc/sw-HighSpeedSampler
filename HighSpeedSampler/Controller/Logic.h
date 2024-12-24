@@ -1,10 +1,10 @@
-﻿#ifndef __LOGIC_H__
+#ifndef __LOGIC_H__
 #define __LOGIC_H__
 
 // Includes
 //
 #include <stdint.h>
-#include "Controller\Sampler.h"
+#include "Sampler.h"
 
 // Functions
 //

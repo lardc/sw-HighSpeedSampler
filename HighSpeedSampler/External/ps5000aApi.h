@@ -1,4 +1,4 @@
-﻿/****************************************************************************
+/****************************************************************************
   *
   * Filename:    ps5000aApi.h
   * Author:      MAS
@@ -7,7 +7,7 @@
   * This header defines the interface to driver routines for the
   * PicoScope 5000A, B & D Series PC Oscilloscopes.
   *
-	* Copyright © 2012-2018 Pico Technology Ltd. All rights reserved.
+	* Copyright � 2012-2018 Pico Technology Ltd. All rights reserved.
 	*
   ****************************************************************************/
 #ifndef __PS5000AAPI_H__
