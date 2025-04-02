@@ -160,7 +160,9 @@ void CONTROL_PisoScopeInit()
 
 	if (status != PICO_OK)
 	{
-		InfoPrint(IP_Err, "Pisoscope init error");
+		char s[128]{};
+		sprintf_s(s, 128, "Pisoscope init error 0x%04X", status);
+		InfoPrint(IP_Err, s);
 		CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
 	}
 	else
