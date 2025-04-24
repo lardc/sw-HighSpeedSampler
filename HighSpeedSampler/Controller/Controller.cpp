@@ -182,6 +182,7 @@ void CONTROL_HandleSamplerData()
 			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0;
 
 			InfoPrint(IP_Info, "Sampling finished");
+			PrintTime();
 			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt,
 														 (DataTable[REG_ENABLE_VOLTAGE_SMPL] == 0 || DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true, &Index0V);
 			CalcOK = (CalcProblem == PROBLEM_NONE) ? true : false;
