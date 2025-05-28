@@ -212,7 +212,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 					if (dIdt) *dIdt = Actual_dIdt;
 
-					sprintf_s(message, 256, "Actual dIdt: %.1f", Actual_dIdt);
+					sprintf_s(message, 256, "Actual dIdt: %.2f", Actual_dIdt);
 					InfoPrint(IP_Info, message);
 
 					// Calculate Id

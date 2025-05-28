@@ -70,7 +70,7 @@
 #define REG_RESULT_QRR				203	// Reverse recovery charge (in uQ x10)
 #define REG_RESULT_ZERO				204	// Zero-cross time (in us x10)
 #define REG_RESULT_ZERO_V			205	// Zero-cross time for on-state voltage (in us x10)
-#define REG_RESULT_DIDT				206	// Actual value of dIdt (in A/us x10)
+#define REG_RESULT_DIDT				206	// Actual value of dIdt (in A/us x100)
 #define REG_RESULT_ID				207	// Direct current amplitude (in A)
 #define REG_RESULT_VD				208	// Direct voltage amplitude (in V)
 #define REG_RESULT_QRR_B32			209	// Reverse recovery charge (in uQ x10) 32bit part

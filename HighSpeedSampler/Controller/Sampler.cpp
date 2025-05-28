@@ -2,6 +2,7 @@
 //
 #include "stdafx.h"
 #include "Sampler.h"
+#include "Info.h"
 
 // Includes
 //
@@ -265,6 +266,14 @@ PICO_STATUS SAMPLER_ActivateSampling()
 
 bool SAMPLING_Finished()
 {
+	if (SamplingVDone)
+	{
+		InfoPrint(IP_Info, "V Sampling Finish");
+		if (SamplingIDone)
+		{
+			InfoPrint(IP_Info, "I Sampling Finish");
+		}
+	}
 	return (SamplingVDone && SamplingIDone);
 }
 //----------------------------------------------
