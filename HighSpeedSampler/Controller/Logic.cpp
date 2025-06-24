@@ -131,11 +131,13 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 			if ((status = SAMPLER_Stop()) == PICO_OK)
 			{
 				// Convert to current
-				float Kfine = (float)DataTable[REG_I_FINE_N] / DataTable[REG_I_FINE_D];
-				float Offset = (float)((int16_t)DataTable[REG_I_FINE_OFFSET]) / 10;
+				uint16_t DToffset = REG_I_3_P2 + (SAMPLER_GetSavedIRange() - 3) * 3;
+				float P2_I = (float)(int16_t)DataTable[DToffset] / 1e6;
+				float P1_I = (float)DataTable[DToffset + 1] / 1000;
+				float P0_I = (float)(int16_t)DataTable[DToffset + 2];
 
 				// Diagnostic output
-				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; Kfine: %.3f; Offset: %.1f", ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), Kfine, Offset);
+				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; P2: %.3f; P1: %.1f; P0: %.1f", ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), P2_I, P1_I, P0_I);
 				InfoPrint(IP_Info, message);
 
 				if (InvertCurrent)
@@ -145,24 +147,33 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				}
 				
 				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
-					MEMBUF_fScopeI[i] = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i] * Kfine) / (INT16_MAX * ShuntResCache * 0.001f) + Offset;
+				{
+					float ScopeI = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i]) / (INT16_MAX * ShuntResCache * 0.001f);
+					MEMBUF_fScopeI[i] = ScopeI * ScopeI * P2_I + ScopeI * P1_I + P0_I;
+				}
 
 				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 				SPLINE_Apply(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 
 				// Convert to voltage
 				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
-				Kfine = (float)DataTable[REG_V_FINE_N] / DataTable[REG_V_FINE_D];
-				Offset = (float)((int16_t)DataTable[REG_V_FINE_OFFSET]) / 10;
+
+				DToffset = REG_U_5_P2 + (SAMPLER_GetSavedVRange() - 5) * 3;
+				float P2_U = (float)(int16_t)DataTable[DToffset] / 1e6;
+				float P1_U = (float)DataTable[DToffset + 1] / 1000;
+				float P0_U = (float)(int16_t)DataTable[DToffset + 2];
 
 				// Diagnostic output
-				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; Kfine: %.3f; Offset: %.1f", SAMPLER_GetSavedVRange(), SAMPLER_GetVRangeCoeff(), Kfine, Offset);
+				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; P2: %.3f; P1: %.1f; P0: %.1f", SAMPLER_GetSavedVRange(), SAMPLER_GetVRangeCoeff(), P2_U, P1_U, P0_U);
 				InfoPrint(IP_Info, message);
 
 				if (!SCOPE_CURRENT_ONLY)
 				{
 					for (i = 0; i < MEMBUF_Scope_Counter; ++i)
-						MEMBUF_fScopeV[i] = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX) + Offset;
+					{
+						float ScopeU = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX);
+						MEMBUF_fScopeV[i] = ScopeU * ScopeU * P2_U + ScopeU * P1_U + P0_U;
+					}
 
 					FIR_Apply(MEMBUF_fScopeV, MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
 					SPLINE_Apply(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
