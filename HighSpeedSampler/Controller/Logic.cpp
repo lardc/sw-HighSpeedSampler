@@ -137,7 +137,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				float P0_I = (float)(int16_t)DataTable[DToffset + 2];
 
 				// Diagnostic output
-				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; P2: %.3f; P1: %.1f; P0: %.1f", ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), P2_I, P1_I, P0_I);
+				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f", ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), P2_I, P1_I, P0_I);
 				InfoPrint(IP_Info, message);
 
 				if (InvertCurrent)
@@ -164,7 +164,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				float P0_U = (float)(int16_t)DataTable[DToffset + 2];
 
 				// Diagnostic output
-				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; P2: %.3f; P1: %.1f; P0: %.1f", SAMPLER_GetSavedVRange(), SAMPLER_GetVRangeCoeff(), P2_U, P1_U, P0_U);
+				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f", SAMPLER_GetSavedVRange(), SAMPLER_GetVRangeCoeff(), P2_U, P1_U, P0_U);
 				InfoPrint(IP_Info, message);
 
 				if (!SCOPE_CURRENT_ONLY)
