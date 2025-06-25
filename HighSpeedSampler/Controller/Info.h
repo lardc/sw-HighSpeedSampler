@@ -18,6 +18,5 @@ typedef enum __InfoPrintParam
 // Functions
 //
 void InfoPrint(InfoPrintParam Param, char *Message);
-void PrintTime();
 
 #endif	// __INFO_H__

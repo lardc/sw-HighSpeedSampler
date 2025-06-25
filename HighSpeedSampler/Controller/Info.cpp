@@ -34,12 +34,12 @@ void InfoPrint(InfoPrintParam Param, char *Message)
 			break;
 	}
 
-	printf("%s %s\n", Description, Message);
-}
-
-void PrintTime()
-{
+	// Подготовка даты
 	SYSTEMTIME LocTime;
 	GetLocalTime(&LocTime);
-	printf("Sample created at %04d-%02d-%02d %02d:%02d:%02d\n", LocTime.wYear, LocTime.wMonth, LocTime.wDay, LocTime.wHour, LocTime.wMinute, LocTime.wSecond);
+	char dt_str[32];
+	sprintf_s(dt_str, 32, "%04d-%02d-%02d %02d:%02d:%02d",
+		LocTime.wYear, LocTime.wMonth, LocTime.wDay, LocTime.wHour, LocTime.wMinute, LocTime.wSecond);
+
+	printf("%s %s %s\n", dt_str, Description, Message);
 }
