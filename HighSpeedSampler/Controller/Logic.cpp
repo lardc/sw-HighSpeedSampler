@@ -132,7 +132,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 			{
 				// Convert to current
 				uint16_t DToffset = REG_I_3_P2 + (SAMPLER_GetSavedIRange() - 3) * 3;
-				float P2_I = (float)(int16_t)DataTable[DToffset] / 1e6;
+				float P2_I = (float)(int16_t)DataTable[DToffset] / 1e6f;
 				float P1_I = (float)DataTable[DToffset + 1] / 1000;
 				float P0_I = (float)(int16_t)DataTable[DToffset + 2];
 
@@ -159,7 +159,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
 
 				DToffset = REG_U_5_P2 + (SAMPLER_GetSavedVRange() - 5) * 3;
-				float P2_U = (float)(int16_t)DataTable[DToffset] / 1e6;
+				float P2_U = (float)(int16_t)DataTable[DToffset] / 1e6f;
 				float P1_U = (float)DataTable[DToffset + 1] / 1000;
 				float P0_U = (float)(int16_t)DataTable[DToffset + 2];
 
