@@ -227,7 +227,7 @@ void CONTROL_HandleSamplerData()
 			uint32_t intQrr = (uint32_t)(Qrr * 10);
 
 			DataTable[REG_RESULT_IRR] =		(uint16_t)(Irr * 10);
-			DataTable[REG_RESULT_TRR] =		(uint16_t)(trr * 10);
+			DataTable[REG_RESULT_TRR] =		(uint16_t)(trr * 100);
 			DataTable[REG_RESULT_QRR] =		intQrr & 0xffff;
 			DataTable[REG_RESULT_ZERO] =	(uint16_t)(Index0 * SAMPLING_TIME_FRACTION * 10);
 			DataTable[REG_RESULT_ZERO_V] =	(uint16_t)(Index0V * SAMPLING_TIME_FRACTION * 10);

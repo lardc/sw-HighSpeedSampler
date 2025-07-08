@@ -115,6 +115,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 	char message[256];
 
 	uint32_t i, Index_0, Index_irr, Index_trr, Index_025, Index_09, Index_0V;
+	float Corr_trr;
 	PICO_STATUS status;
 	bool InvertCurrent = (DataTable[REG_INVERT_CURRENT] == 1);
 	float Actual_dIdt = 0;
@@ -210,11 +211,23 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 					// Calculate trr and Qrr
 					Index_trr = CALC_trrIndex(MEMBUF_fScopeIFiltered[Index_025], MEMBUF_fScopeIFiltered[Index_09], Index_025, Index_09);
+					
+					if ((Index_trr - Index_0) <= 1250)
+						Corr_trr = (float)DataTable[REG_Trr_1_K] * 0.001f;
+					else if ((Index_trr - Index_0) <= 3750)
+						Corr_trr = (float)DataTable[REG_Trr_2_K] * 0.001f;
+					else if ((Index_trr - Index_0) <= 10000)
+						Corr_trr = (float)DataTable[REG_Trr_3_K] * 0.001f;
+					else
+						Corr_trr = (float)DataTable[REG_Trr_4_K] * 0.001f;
 
-					if (trr) *trr = SAMPLING_TIME_FRACTION * ((Index_trr > Index_0) ? (Index_trr - Index_0) : 0);
-					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION));
+					if (trr) *trr = SAMPLING_TIME_FRACTION * Corr_trr * ((Index_trr > Index_0) ? (Index_trr - Index_0) : 0);
+					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION * Corr_trr));
 
 					sprintf_s(message, 256, "Index trr: %d", Index_trr);
+					InfoPrint(IP_Info, message);
+
+					sprintf_s(message, 256, "Index trr - Index_0: %d", (Index_trr - Index_0));
 					InfoPrint(IP_Info, message);
 
 					// Calculate actual dIdt

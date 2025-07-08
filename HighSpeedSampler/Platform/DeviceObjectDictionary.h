@@ -79,6 +79,11 @@
 #define REG_I_8_P2					41	// Коэффициент тонкой подстройки Р2
 #define REG_I_8_P1					42	// Коэффициент тонкой подстройки Р2
 #define REG_I_8_P0					43	// Смещение тонкой подстройки Р0
+
+#define REG_Trr_1_K					44	// 1-10us x1000
+#define REG_Trr_2_K					45	// 10 - 30us x1000
+#define REG_Trr_3_K					46	// 30-80us x1000
+#define REG_Trr_4_K					46	// 80-300us x1000
 //
 #define REG_SP__1					127
 //
@@ -110,7 +115,7 @@
 //
 #define REG_DF_REASON_EX			200	// Fault or disable extended reason
 #define REG_RESULT_IRR				201	// Reverse recovery current amplitude (in A x10)
-#define REG_RESULT_TRR				202	// Reverse recovery time (in us x10)
+#define REG_RESULT_TRR				202	// Reverse recovery time (in us x100)
 #define REG_RESULT_QRR				203	// Reverse recovery charge (in uQ x10)
 #define REG_RESULT_ZERO				204	// Zero-cross time (in us x10)
 #define REG_RESULT_ZERO_V			205	// Zero-cross time for on-state voltage (in us x10)

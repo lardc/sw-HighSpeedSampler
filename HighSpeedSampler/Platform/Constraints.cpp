@@ -64,10 +64,10 @@ const TableItemConstraint NVConstraint[DATA_TABLE_NV_SIZE] =
 										   {0, UINT16_MAX, 0},														// 41
 										   {0, X_D_DEF3, X_D_DEF2},													// 42
 										   {0, UINT16_MAX, 0},														// 43
-										   {0, 0, 0},																// 44
-										   {0, 0, 0},																// 45
-										   {0, 0, 0},																// 46
-										   {0, 0, 0},																// 47
+										   {0, UINT16_MAX, 0},														// 44
+										   {0, UINT16_MAX, 0},														// 45
+										   {0, UINT16_MAX, 0},														// 46
+										   {0, UINT16_MAX, 0},														// 47
 										   {0, 0, 0},																// 48
 										   {0, 0, 0},																// 49
 										   {0, 0, 0},																// 50
