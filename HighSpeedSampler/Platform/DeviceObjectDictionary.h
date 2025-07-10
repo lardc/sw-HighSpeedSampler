@@ -80,10 +80,13 @@
 #define REG_I_8_P1					42	// Коэффициент тонкой подстройки Р2
 #define REG_I_8_P0					43	// Смещение тонкой подстройки Р0
 
-#define REG_Trr_1_K					44	// 1-10us x1000
-#define REG_Trr_2_K					45	// 10 - 30us x1000
-#define REG_Trr_3_K					46	// 30-80us x1000
-#define REG_Trr_4_K					46	// 80-300us x1000
+#define REG_Trr_0_K					44	// 1-2us x1000
+#define REG_Trr_1_K					45	// 2-10us x1000
+#define REG_Trr_2_K					46	// 10-19,2us x1000
+#define REG_Trr_3_K					47	// 19,2-30us x1000
+#define REG_Trr_4_K					48	// 30-40us x1000
+#define REG_Trr_5_K					49	// 40-80us x1000
+#define REG_Trr_6_K					50	// 80-300us x1000
 //
 #define REG_SP__1					127
 //

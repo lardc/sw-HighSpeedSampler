@@ -212,14 +212,20 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					// Calculate trr and Qrr
 					Index_trr = CALC_trrIndex(MEMBUF_fScopeIFiltered[Index_025], MEMBUF_fScopeIFiltered[Index_09], Index_025, Index_09);
 					
-					if ((Index_trr - Index_0) <= 1250)
+					if ((Index_trr - Index_0) <= 250)
+						Corr_trr = (float)DataTable[REG_Trr_0_K] * 0.001f;
+					else if ((Index_trr - Index_0) <= 1250)
 						Corr_trr = (float)DataTable[REG_Trr_1_K] * 0.001f;
-					else if ((Index_trr - Index_0) <= 3750)
+					else if ((Index_trr - Index_0) <= 2400)
 						Corr_trr = (float)DataTable[REG_Trr_2_K] * 0.001f;
-					else if ((Index_trr - Index_0) <= 10000)
+					else if ((Index_trr - Index_0) <= 3750)
 						Corr_trr = (float)DataTable[REG_Trr_3_K] * 0.001f;
-					else
+					else if ((Index_trr - Index_0) <= 5000)
 						Corr_trr = (float)DataTable[REG_Trr_4_K] * 0.001f;
+					else if ((Index_trr - Index_0) <= 10000)
+						Corr_trr = (float)DataTable[REG_Trr_5_K] * 0.001f;
+					else
+						Corr_trr = (float)DataTable[REG_Trr_6_K] * 0.001f;
 
 					if (trr) *trr = SAMPLING_TIME_FRACTION * Corr_trr * ((Index_trr > Index_0) ? (Index_trr - Index_0) : 0);
 					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION * Corr_trr));

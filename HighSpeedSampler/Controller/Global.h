@@ -33,7 +33,7 @@
 #define SAMPLING_DEFAULT_RANGE		PS5000A_20V			// Default sampling current range
 #define SAMPLING_RESOLUTION			PS5000A_DR_15BIT	// Sampling resolution
 #define SAMPLING_TIME_BASE			3					// Sampling timebase
-#define SAMPLING_TIME_FRACTION		0.0085f				// Sampling time fraction (in us)
+#define SAMPLING_TIME_FRACTION		0.008f				// Sampling time fraction (in us)
 #define SAMPLING_SAMPLES			500000L				// Number of samples in block mode
 #define SAMPLING_SAFE_RANGE_RATIO	1.2f				// Safe zone relative to amplitude
 #define SAMPLING_QRR_VR				-100.0f				// Normal reverse recovery voltage for Qrr-only mode
