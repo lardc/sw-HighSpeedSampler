@@ -11,6 +11,7 @@
 //
 #include <stdint.h>
 #include "DeviceObjectDictionary.h"
+#include "Controller.h"
 
 #define NO		0	// equal to false
 #define YES		1	// equal to true
@@ -29,7 +30,7 @@ const TableItemConstraint NVConstraint[DATA_TABLE_NV_SIZE] =
 										   {1, X_D_DEF3, X_D_DEF2},													// 7
 										   {0, UINT16_MAX, 0},														// 8
 										   {0, 0, 0},																// 9
-										   {0, 0, 0},																// 10
+										   {0, VALUES_READx_SIZE, 0},												// 10
 										   {0, 0, 0},																// 11
 										   {0, 0, 0},																// 12
 										   {0, 0, 0},																// 13
