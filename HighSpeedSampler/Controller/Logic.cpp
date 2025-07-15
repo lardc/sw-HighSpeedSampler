@@ -123,6 +123,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 	SCOPE_ReadFullCounter = 0;
 	*CalcProblem = PROBLEM_NONE;
 
+	DataTable[REG_RESULT_TS] = 0;
+	DataTable[REG_RESULT_TF] = 0;
+
 	// Get scope data
 	if ((status = SAMPLER_ConnectOutputBuffers(MEMBUF_ScopeI, SAMPLING_SAMPLES, MEMBUF_ScopeV, SAMPLING_SAMPLES)) == PICO_OK)
 	{
@@ -190,6 +193,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (!CALC_IrrAndZeroCrossingIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, &Index_0, &Index_irr))
 						throw PROBLEM_CALC_IRR;
 
+					uint16_t ts = Index_irr - Index_0;
+					float ts_time = ts * SAMPLING_TIME_FRACTION;
+
 					if (Index0) *Index0 = Index_0;
 					if (Irr) *Irr = (float)fabs(MEMBUF_fScopeIFiltered[Index_irr]);
 
@@ -230,11 +236,20 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (trr) *trr = SAMPLING_TIME_FRACTION * Corr_trr * ((Index_trr > Index_0) ? (Index_trr - Index_0) : 0);
 					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION * Corr_trr));
 
+					uint16_t tf = Index_trr - ts;
+					float tf_time = tf * SAMPLING_TIME_FRACTION;
+
 					sprintf_s(message, 256, "Index trr: %d", Index_trr);
 					InfoPrint(IP_Info, message);
 
 					sprintf_s(message, 256, "Index trr - Index_0: %d", (Index_trr - Index_0));
 					InfoPrint(IP_Info, message);
+
+					sprintf_s(message, 256, "ts_time x10: %.3f ms; tf_time x10: %.3f ms", ts_time * 10, tf_time * 10);
+					InfoPrint(IP_Info, message);
+
+					DataTable[REG_RESULT_TS] = (uint16_t)(ts_time * 10);
+					DataTable[REG_RESULT_TF] = (uint16_t)(tf_time * 10);
 
 					// Calculate actual dIdt
 					if (!CALC_dIdt(MEMBUF_fScopeIFiltered, Index_0, Index_irr, SAMPLING_TIME_FRACTION, &Actual_dIdt))
