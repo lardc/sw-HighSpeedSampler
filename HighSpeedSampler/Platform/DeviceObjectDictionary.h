@@ -80,13 +80,10 @@
 #define REG_I_8_P1					42	// Коэффициент тонкой подстройки Р2
 #define REG_I_8_P0					43	// Смещение тонкой подстройки Р0
 
-#define REG_Trr_0_K					44	// 1-2us x1000
-#define REG_Trr_1_K					45	// 2-10us x1000
-#define REG_Trr_2_K					46	// 10-19,2us x1000
-#define REG_Trr_3_K					47	// 19,2-30us x1000
-#define REG_Trr_4_K					48	// 30-40us x1000
-#define REG_Trr_5_K					49	// 40-80us x1000
-#define REG_Trr_6_K					50	// 80-300us x1000
+#define REG_TRR_P2					44	// Trr P2
+#define REG_TRR_P1					45	// Trr P1
+#define REG_TRR_P0					46	// Trr P0
+
 //
 #define REG_SP__1					127
 //
@@ -126,6 +123,7 @@
 #define REG_RESULT_ID				207	// Direct current amplitude (in A)
 #define REG_RESULT_VD				208	// Direct voltage amplitude (in V)
 #define REG_RESULT_QRR_B32			209	// Reverse recovery charge (in uQ x10) 32bit part
+#define REG_RESULT_TIME_0_90		210	// Time 0 - 90 Irr (in us x100) 
 //
 #define REG_EP_ELEMENTARY_FRACT		220	// Elementary fraction length in ns
 #define REG_EP_STEP_FRACTION_CNT	221	// Number of elementary fractions in the EP single step
