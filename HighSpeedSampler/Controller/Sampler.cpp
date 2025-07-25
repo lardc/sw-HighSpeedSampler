@@ -7,6 +7,7 @@
 // Includes
 //
 #include "Global.h"
+#include "Logic.h"
 #include <math.h>
 
 // Variables
@@ -75,8 +76,8 @@ PICO_STATUS SAMPLER_ConfigureSamplingRate()
 		return PICO_OK;
 
 	PICO_STATUS ret_val = PICO_OK;
-	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aGetTimebase(VHandler, SAMPLING_TIME_BASE, SAMPLING_SAMPLES, NULL, NULL, 0)) == PICO_OK)
-		ret_val = ps5000aGetTimebase(IHandler, SAMPLING_TIME_BASE, SAMPLING_SAMPLES, NULL, NULL, 0);
+	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aGetTimebase(VHandler, SAMPLING_TIME_BASE, LOGIC_GetSamplingSamples(), NULL, NULL, 0)) == PICO_OK)
+		ret_val = ps5000aGetTimebase(IHandler, SAMPLING_TIME_BASE, LOGIC_GetSamplingSamples(), NULL, NULL, 0);
 
 	return ret_val;
 }
@@ -257,8 +258,8 @@ PICO_STATUS SAMPLER_ActivateSampling()
 		SamplingVDone = true;
 
 	if (SCOPE_CURRENT_ONLY ||
-		(ret_val = ps5000aRunBlock(VHandler, 0, SAMPLING_SAMPLES, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL)) == PICO_OK)
-		ret_val = ps5000aRunBlock(IHandler, 0, SAMPLING_SAMPLES, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL);
+		(ret_val = ps5000aRunBlock(VHandler, 0, LOGIC_GetSamplingSamples(), SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL)) == PICO_OK)
+		ret_val = ps5000aRunBlock(IHandler, 0, LOGIC_GetSamplingSamples(), SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL);
 
 	return ret_val;
 }

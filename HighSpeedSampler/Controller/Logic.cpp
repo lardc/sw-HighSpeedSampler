@@ -1,4 +1,4 @@
-// Headers
+﻿// Headers
 //
 #include "stdafx.h"
 #include "Logic.h"
@@ -16,6 +16,7 @@
 #include "Platform\DataTable.h"
 #include "Platform\DeviceObjectDictionary.h"
 #include "Info.h"
+#include "Global.h"
 
 // Variables
 //
@@ -126,10 +127,12 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 	DataTable[REG_RESULT_TS] = 0;
 	DataTable[REG_RESULT_TF] = 0;
 
+	uint32_t NSamples = LOGIC_GetSamplingSamples();
+
 	// Get scope data
-	if ((status = SAMPLER_ConnectOutputBuffers(MEMBUF_ScopeI, SAMPLING_SAMPLES, MEMBUF_ScopeV, SAMPLING_SAMPLES)) == PICO_OK)
+	if ((status = SAMPLER_ConnectOutputBuffers(MEMBUF_ScopeI, NSamples, MEMBUF_ScopeV, NSamples)) == PICO_OK)
 	{
-		MEMBUF_Scope_Counter = SAMPLING_SAMPLES;
+		MEMBUF_Scope_Counter = NSamples;
 		if ((status = SAMPLER_GetValues(&MEMBUF_Scope_Counter)) == PICO_OK)
 		{
 			if ((status = SAMPLER_Stop()) == PICO_OK)
@@ -439,3 +442,13 @@ void LOGIC_VoltageToFile()
 	LOGIC_FloatBufferToFile(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, "voltage.csv");
 }
 // ----------------------------------------
+
+uint32_t LOGIC_GetSamplingSamples()
+{
+	uint32_t n_const = (uint32_t)(SAMPLING_T_CONST / SAMPLING_TIME_FRACTION);
+
+	float t_fall = (DataTable[REG_DC_FALL_RATE] > 0) ? ((float)DataTable[REG_CURRENT_AMPL] / (float)DataTable[REG_DC_FALL_RATE]) : 0.0f;
+	uint32_t n_fall = (uint32_t)(t_fall / SAMPLING_TIME_FRACTION);
+
+	return n_const + n_fall;
+}
