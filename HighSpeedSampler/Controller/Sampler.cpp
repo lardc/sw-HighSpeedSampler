@@ -75,9 +75,10 @@ PICO_STATUS SAMPLER_ConfigureSamplingRate()
 	if (DIAG_EMULATE_SCOPES)
 		return PICO_OK;
 
+	uint32_t samples = LOGIC_GetSamplingSamples();
 	PICO_STATUS ret_val = PICO_OK;
-	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aGetTimebase(VHandler, SAMPLING_TIME_BASE, LOGIC_GetSamplingSamples(), NULL, NULL, 0)) == PICO_OK)
-		ret_val = ps5000aGetTimebase(IHandler, SAMPLING_TIME_BASE, LOGIC_GetSamplingSamples(), NULL, NULL, 0);
+	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aGetTimebase(VHandler, SAMPLING_TIME_BASE, samples, NULL, NULL, 0)) == PICO_OK)
+		ret_val = ps5000aGetTimebase(IHandler, SAMPLING_TIME_BASE, samples, NULL, NULL, 0);
 
 	return ret_val;
 }
@@ -257,9 +258,10 @@ PICO_STATUS SAMPLER_ActivateSampling()
 	if (SCOPE_CURRENT_ONLY)
 		SamplingVDone = true;
 
+	uint32_t samples = LOGIC_GetSamplingSamples();
 	if (SCOPE_CURRENT_ONLY ||
-		(ret_val = ps5000aRunBlock(VHandler, 0, LOGIC_GetSamplingSamples(), SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL)) == PICO_OK)
-		ret_val = ps5000aRunBlock(IHandler, 0, LOGIC_GetSamplingSamples(), SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL);
+		(ret_val = ps5000aRunBlock(VHandler, 0, samples, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL)) == PICO_OK)
+		ret_val = ps5000aRunBlock(IHandler, 0, samples, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL);
 
 	return ret_val;
 }
