@@ -6,6 +6,7 @@
 // Includes
 //
 #include "Global.h"
+#include "Logic.h"
 #include <math.h>
 
 // Variables
