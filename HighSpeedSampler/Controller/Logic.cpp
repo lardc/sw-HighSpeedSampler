@@ -133,6 +133,10 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 	if ((status = SAMPLER_ConnectOutputBuffers(MEMBUF_ScopeI, NSamples, MEMBUF_ScopeV, NSamples)) == PICO_OK)
 	{
 		MEMBUF_Scope_Counter = NSamples;
+
+		sprintf_s(message, 256, "NSamplies: %d; TSamplies: %.f", NSamples, NSamples * SAMPLING_TIME_FRACTION);
+		InfoPrint(IP_Info, message);
+
 		if ((status = SAMPLER_GetValues(&MEMBUF_Scope_Counter)) == PICO_OK)
 		{
 			if ((status = SAMPLER_Stop()) == PICO_OK)
@@ -449,7 +453,7 @@ uint32_t LOGIC_GetSamplingSamples()
 
 {
 	uint32_t n_const = (uint32_t)(SAMPLING_T_CONST / SAMPLING_TIME_FRACTION);
-	float t_fall = (DataTable[REG_DC_FALL_RATE] > 0) ? ((float)DataTable[REG_CURRENT_AMPL] / (float)DataTable[REG_DC_FALL_RATE]) : 0.0f;
+	float t_fall = (DataTable[REG_DC_FALL_TIME] > 0) ? (float)DataTable[REG_DC_FALL_TIME] : 0.0f;
 	uint32_t n_fall = (uint32_t)(t_fall / SAMPLING_TIME_FRACTION);
 	return n_const + n_fall;
 }
