@@ -156,7 +156,7 @@ const TableItemConstraint VConstraint[DATA_TABLE_WP_START - DATA_TABLE_WR_START]
 										   {MODE_QRR, SCOPE_CURRENT_ONLY ? MODE_QRR : MODE_QRR_TQ, MODE_QRR},		// 129
 										   {NO, YES, NO},															// 130
 										   {VOLTAGE_AMPL_MIN, VOLTAGE_AMPL_MAX, VOLTAGE_AMPL_DEF},					// 131
-										   {0, 0, 0},																// 132
+										   {0, UINT16_MAX, 0},														// 132
 										   {0, 0, 0},																// 133
 										   {0, 0, 0},																// 134
 										   {0, 0, 0},																// 135

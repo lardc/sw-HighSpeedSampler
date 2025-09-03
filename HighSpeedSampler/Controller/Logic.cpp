@@ -16,6 +16,7 @@
 #include "Platform\DataTable.h"
 #include "Platform\DeviceObjectDictionary.h"
 #include "Info.h"
+#include "Global.h"
 
 // Variables
 //
@@ -123,10 +124,15 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 	SCOPE_ReadFullCounter = 0;
 	*CalcProblem = PROBLEM_NONE;
 
+	DataTable[REG_RESULT_TS] = 0;
+	DataTable[REG_RESULT_TF] = 0;
+
+	uint32_t NSamples = LOGIC_GetSamplingSamples();
+
 	// Get scope data
-	if ((status = SAMPLER_ConnectOutputBuffers(MEMBUF_ScopeI, SAMPLING_SAMPLES, MEMBUF_ScopeV, SAMPLING_SAMPLES)) == PICO_OK)
+	if ((status = SAMPLER_ConnectOutputBuffers(MEMBUF_ScopeI, NSamples, MEMBUF_ScopeV, NSamples)) == PICO_OK)
 	{
-		MEMBUF_Scope_Counter = SAMPLING_SAMPLES;
+		MEMBUF_Scope_Counter = NSamples;
 		if ((status = SAMPLER_GetValues(&MEMBUF_Scope_Counter)) == PICO_OK)
 		{
 			if ((status = SAMPLER_Stop()) == PICO_OK)
@@ -233,11 +239,22 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 					*Time09 = (float)(Index_09 - Index_0) * SAMPLING_TIME_FRACTION * Corr_trr;
 
-					sprintf_s(message, 256, "Time 0_90: %f", *Time09);
+					sprintf_s(message, 256, "Time 0_90: %.3f ms", *Time09);
 					InfoPrint(IP_Info, message);
 				
 					if (trr) *trr = SAMPLING_TIME_FRACTION * Corr_trr * ((Index_trr > Index_0) ? (Index_trr - Index_0) : 0);
 					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION * Corr_trr));
+
+					uint16_t ts = Index_irr - Index_0;
+					float ts_time = ts * SAMPLING_TIME_FRACTION * Corr_trr;
+
+					uint16_t tf = Index_trr - ts;
+					float tf_time = tf * SAMPLING_TIME_FRACTION * Corr_trr;
+
+					sprintf_s(message, 256, "ts_time: %.3f ms; tf_time: %.3f ms", ts_time, tf_time);
+					InfoPrint(IP_Info, message);
+					DataTable[REG_RESULT_TS] = (uint16_t)(ts_time * 10);
+					DataTable[REG_RESULT_TF] = (uint16_t)(tf_time * 10);
 
 					// Calculate actual dIdt
 					if (!CALC_dIdt(MEMBUF_fScopeIFiltered, Index_0, Index_irr, SAMPLING_TIME_FRACTION, &Actual_dIdt))
@@ -425,5 +442,15 @@ void LOGIC_VoltageToFile()
 {
 	LOGIC_ShortBufferToFile(MEMBUF_ScopeV, MEMBUF_Scope_Counter, "voltage_raw.csv");
 	LOGIC_FloatBufferToFile(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, "voltage.csv");
+}
+// ----------------------------------------
+
+uint32_t LOGIC_GetSamplingSamples()
+
+{
+	uint32_t n_const = (uint32_t)(SAMPLING_T_CONST / SAMPLING_TIME_FRACTION);
+	float t_fall = (DataTable[REG_DC_FALL_RATE] > 0) ? ((float)DataTable[REG_CURRENT_AMPL] / (float)DataTable[REG_DC_FALL_RATE]) : 0.0f;
+	uint32_t n_fall = (uint32_t)(t_fall / SAMPLING_TIME_FRACTION);
+	return n_const + n_fall;
 }
 // ----------------------------------------

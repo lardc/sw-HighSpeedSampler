@@ -93,6 +93,7 @@
 #define REG_MEASURE_MODE			129	// Select sampling mode (Qrr or Qrr-tq)
 #define REG_TR_050_METHOD			130	// Use 50% level of Irr to detect tr time
 #define REG_VOLTAGE_AMPL			131	// Voltage amplitude (in V)
+#define REG_DC_FALL_RATE			132 // Current fall rate
 //
 #define REG_DIAG_FORCE_SECTOR_READ	150	// Force read of defined time sector from scopes (in us)
 #define REG_DIAG_FULL_ARR_SCALE		151	// Scale factor for full-array read
@@ -123,7 +124,9 @@
 #define REG_RESULT_ID				207	// Direct current amplitude (in A)
 #define REG_RESULT_VD				208	// Direct voltage amplitude (in V)
 #define REG_RESULT_QRR_B32			209	// Reverse recovery charge (in uQ x10) 32bit part
-#define REG_RESULT_TIME_0_90		210	// Time 0 - 90 Irr (in us x100) 
+#define REG_RESULT_TS				210 // Time ts (in us x10)
+#define REG_RESULT_TF				211 // Time tf (in us x10)
+#define REG_RESULT_TIME_0_90		212	// Time 0 - 90 Irr (in us x100) 
 //
 #define REG_EP_ELEMENTARY_FRACT		220	// Elementary fraction length in ns
 #define REG_EP_STEP_FRACTION_CNT	221	// Number of elementary fractions in the EP single step

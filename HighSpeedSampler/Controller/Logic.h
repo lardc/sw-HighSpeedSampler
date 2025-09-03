@@ -18,5 +18,6 @@ uint16_t LOGIC_LoadFragment(uint16_t* BufferI, uint16_t* BufferV, uint16_t Size,
 uint16_t LOGIC_LoadRawFragment(uint16_t* BufferI, uint16_t* BufferV, uint16_t Size, uint16_t Scale);
 void LOGIC_CurrentToFile();
 void LOGIC_VoltageToFile();
+uint32_t LOGIC_GetSamplingSamples();
 
 #endif	// __LOGIC_H__
