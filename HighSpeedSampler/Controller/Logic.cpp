@@ -249,16 +249,16 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (trr) *trr = SAMPLING_TIME_FRACTION * Corr_trr * ((Index_trr > Index_0) ? (Index_trr - Index_0) : 0);
 					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION * Corr_trr));
 
-					uint16_t ts = Index_irr - Index_0;
-					float ts_time = ts * SAMPLING_TIME_FRACTION * Corr_trr;
+					uint16_t Index_0_ts = Index_irr - Index_0;
+					float ts_time = Index_0_ts * SAMPLING_TIME_FRACTION * Corr_trr;
 
-					uint16_t tf = Index_trr - ts;
+					uint16_t tf = Index_0_trr - Index_0_ts;
 					float tf_time = tf * SAMPLING_TIME_FRACTION * Corr_trr;
 
 					sprintf_s(message, 256, "ts_time: %.3f ms; tf_time: %.3f ms", ts_time, tf_time);
 					InfoPrint(IP_Info, message);
-					DataTable[REG_RESULT_TS] = (uint16_t)(ts_time * 10);
-					DataTable[REG_RESULT_TF] = (uint16_t)(tf_time * 10);
+					DataTable[REG_RESULT_TS] = (uint16_t)(ts_time * 100);
+					DataTable[REG_RESULT_TF] = (uint16_t)(tf_time * 100);
 
 					// Calculate actual dIdt
 					if (!CALC_dIdt(MEMBUF_fScopeIFiltered, Index_0, Index_irr, SAMPLING_TIME_FRACTION, &Actual_dIdt))
