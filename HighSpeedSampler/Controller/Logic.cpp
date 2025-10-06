@@ -111,7 +111,7 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 }
 // ----------------------------------------
 
-PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09)
+PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* ts_time, float* tf_time)
 {
 	char message[256];
 
@@ -123,9 +123,6 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 	SCOPE_ReadFullCounter = 0;
 	*CalcProblem = PROBLEM_NONE;
-
-	DataTable[REG_RESULT_TS] = 0;
-	DataTable[REG_RESULT_TF] = 0;
 
 	uint32_t NSamples = LOGIC_GetSamplingSamples();
 
@@ -250,15 +247,13 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION * Corr_trr));
 
 					uint16_t Index_0_ts = Index_irr - Index_0;
-					float ts_time = Index_0_ts * SAMPLING_TIME_FRACTION * Corr_trr;
+					if (ts_time) ts_time = Index_0_ts * SAMPLING_TIME_FRACTION * Corr_trr;
 
 					uint16_t tf = Index_0_trr - Index_0_ts;
-					float tf_time = tf * SAMPLING_TIME_FRACTION * Corr_trr;
+					if (tf_time) tf_time = tf * SAMPLING_TIME_FRACTION * Corr_trr;
 
 					sprintf_s(message, 256, "ts_time: %.3f ms; tf_time: %.3f ms", ts_time, tf_time);
 					InfoPrint(IP_Info, message);
-					DataTable[REG_RESULT_TS] = (uint16_t)(ts_time * 100);
-					DataTable[REG_RESULT_TF] = (uint16_t)(tf_time * 100);
 
 					// Calculate actual dIdt
 					if (!CALC_dIdt(MEMBUF_fScopeIFiltered, Index_0, Index_irr, SAMPLING_TIME_FRACTION, &Actual_dIdt))
