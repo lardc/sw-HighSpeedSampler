@@ -247,10 +247,10 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION * Corr_trr));
 
 					uint16_t Index_0_ts = Index_irr - Index_0;
-					if (ts_time) ts_time = Index_0_ts * SAMPLING_TIME_FRACTION * Corr_trr;
+					if (ts_time) *ts_time = Index_0_ts * SAMPLING_TIME_FRACTION * Corr_trr;
 
 					uint16_t tf = Index_0_trr - Index_0_ts;
-					if (tf_time) tf_time = tf * SAMPLING_TIME_FRACTION * Corr_trr;
+					if (tf_time) *tf_time = tf * SAMPLING_TIME_FRACTION * Corr_trr;
 
 					sprintf_s(message, 256, "ts_time: %.3f ms; tf_time: %.3f ms", ts_time, tf_time);
 					InfoPrint(IP_Info, message);
