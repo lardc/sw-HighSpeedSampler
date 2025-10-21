@@ -35,7 +35,10 @@ typedef struct __TableItemConstraint
 #define VOLTAGE_AMPL_MIN		100		// in V
 #define VOLTAGE_AMPL_MAX		4500	// in V
 #define VOLTAGE_AMPL_DEF		2000	// in V
-
+//
+#define CURRENT_THRESHOLD_MIN	0		// (in %)
+#define CURRENT_THRESHOLD_MAX	100		// (in %)
+#define CURRENT_THRESHOLD_DEF	5		// (in %)
 
 // Variables
 //

@@ -246,8 +246,8 @@ void CONTROL_HandleSamplerData()
 			{
 				uint16_t SampleTimeStep;
 				uint32_t forced_sector = (uint32_t)((float)DataTable[REG_DIAG_FORCE_SECTOR_READ] / SAMPLING_TIME_FRACTION);
-				MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, &SampleTimeStep);
-				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, NULL);
+				MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, &SampleTimeStep, Irr);
+				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, NULL, Irr);
 
 				DataTable[REG_EP_STEP_FRACTION_CNT] = CalcOK ? SampleTimeStep : 1;
 				DataTable[REG_OP_RESULT] = CalcOK ? OPRESULT_OK : OPRESULT_FAIL;
