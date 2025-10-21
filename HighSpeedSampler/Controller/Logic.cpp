@@ -333,13 +333,12 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 	Counter = TrimmedDataCounter / dsRatio;
 
 	for (i = 0; i < Counter; ++i)
-		Buffer[i] = (uint16_t)((int16_t)(SrcBuffer[index0 + i * dsRatio] * OutMulFactor));
+		Buffer[i] = (uint16_t)((int16_t)(SrcBuffer[Index0 + i * dsRatio] * OutMulFactor));
 
 	if (SampleTimeSteps)
 		*SampleTimeSteps = dsRatio;
 
 	return i;
-}
 }
 // ----------------------------------------
 
