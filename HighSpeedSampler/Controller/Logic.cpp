@@ -111,11 +111,11 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 }
 // ----------------------------------------
 
-PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* ts_time, float* tf_time)
+PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* ts_time, float* tf_time, uint16_t SetVd, bool* DutTrig)
 {
 	char message[256];
 
-	uint32_t i, Index_0, Index_irr, Index_trr, Index_025, Index_09, Index_0V;
+	uint32_t i, Index_0, Index_irr, Index_trr, Index_025, Index_09, Index_0V, Index_Vd;
 	float Corr_trr, Corr_trr_P2, Corr_trr_P1, Corr_trr_P0, Index_0_trr;
 	PICO_STATUS status;
 	bool InvertCurrent = (DataTable[REG_INVERT_CURRENT] == 1);
@@ -273,7 +273,12 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					// Calculate voltage zero crossing
 					if (UseVoltage && !SCOPE_CURRENT_ONLY)
 					{
-						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd);
+						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd, &Index_Vd);
+						bool DutTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd);
+
+						sprintf_s(message, 256, "SetVd: %u", SetVd);
+						InfoPrint(IP_Info, message);
+
 						sprintf_s(message, 256, "Vd: %.1f", *Vd);
 						InfoPrint(IP_Info, message);
 

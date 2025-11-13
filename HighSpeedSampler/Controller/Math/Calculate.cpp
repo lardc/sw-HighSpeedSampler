@@ -152,9 +152,10 @@ float CALC_Id(float* Buffer, uint32_t t0)
 }
 //----------------------------------------------
 
-bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex, float* Vd)
+bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex, float* Vd, uint32_t* VdIndex)
 {
 	int32_t i, Vdmax_index = 0;
+	bool DeviceTriggered = true;
 
 	// Find Vd max
 	float Vdmax = Buffer[0];
@@ -165,6 +166,7 @@ bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* Crossi
 			Vdmax_index = i;
 		}
 	*Vd = Vdmax;
+	*VdIndex = Vdmax_index;
 
 	if (Vdmax > OSV_PEAK_DETECT_V && Vdmax_index != 0)
 	{
@@ -176,6 +178,21 @@ bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* Crossi
 			}
 	}
 	
+	return false;
+}
+//----------------------------------------------
+
+bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t VdIndex, uint16_t SetVd)
+{
+	int32_t i;
+	float Vd = SetVd * VD_HYST_SHELF;
+	int32_t ShelfIndex = VdIndex + VD_T_SHELF;
+	
+	for (i = VdIndex; i < ShelfIndex; ++i)
+	{
+		if (Buffer[i] < Vd)
+			return true;
+	}
 	return false;
 }
 //----------------------------------------------

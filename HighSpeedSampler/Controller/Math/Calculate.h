@@ -16,7 +16,9 @@ uint32_t CALC_trrIndex(float I1, float I2, int x1, int x2);
 // Calculate Qrr
 float CALC_Qrr(float* Buffer, uint32_t BufferLength, uint32_t t0, uint32_t trr, float TimeFraction);
 // Calculate on-state voltage crossing index
-bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex, float* Vd);
+bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex, float* Vd, uint32_t* VdIndex);
+//
+bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t VdIndex, uint16_t SetVd);
 // Calculate actual dIdt
 bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, float* dIdt);
 // Calculate Id

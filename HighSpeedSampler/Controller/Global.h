@@ -54,6 +54,8 @@
 // Calculation
 #define IRR_SEARCH_WND				800					// Search window for minimum value
 #define OSV_PEAK_DETECT_V			50.0f				// Off-state minimum voltage (in V)
+#define VD_T_SHELF					1000				// Shelf voltage in direct voltage amplitude
+#define VD_HYST_SHELF				0.9					// Shelf voltage hysteresis in direct voltage amplitude
 #define MUL_FACTOR_I				4					// Scope range multiply factor (I)
 #define MUL_FACTOR_V				2					// Scope range multiply factor (V)
 //
