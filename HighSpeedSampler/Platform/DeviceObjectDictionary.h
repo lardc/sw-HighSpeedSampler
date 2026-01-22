@@ -83,7 +83,8 @@
 #define REG_TRR_P2					44	// Trr P2
 #define REG_TRR_P1					45	// Trr P1
 #define REG_TRR_P0					46	// Trr P0
-
+//
+#define REG_SHELF_DUT_US			100	// Number of samples for shelf calculation
 //
 #define REG_SP__1					127
 //

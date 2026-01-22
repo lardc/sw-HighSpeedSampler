@@ -7,6 +7,8 @@
 //
 #include <math.h>
 #include "Controller\Global.h"
+#include "Platform\DataTable.h"
+#include "Platform\DeviceObjectDictionary.h"
 
 // Functions
 //
@@ -186,13 +188,35 @@ bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t VdIndex, uint16
 {
 	int32_t i;
 	float Vd = SetVd * VD_HYST_SHELF;
-	int32_t ShelfIndex = VdIndex + VD_T_SHELF;
-	
-	for (i = VdIndex; i < ShelfIndex; ++i)
+
+	if (Buffer == NULL || BufferLength == 0 || VdIndex >= BufferLength)
+		return false;
+
+	int32_t crossIndex = -1;
+	for (i = (int32_t)VdIndex - 1; i >= 0; --i)
+	{
+		if (Buffer[i] < Vd && Buffer[i + 1] >= Vd)
+		{
+			crossIndex = i + 1;
+			break;
+		}
+	}
+
+	if (crossIndex < 0)
+		return false;
+
+	uint32_t shelfSamples = (uint32_t)((float)DataTable[REG_SHELF_DUT_US] / SAMPLING_TIME_FRACTION);
+
+	int32_t shelfEnd = crossIndex + (int32_t)shelfSamples;
+	if (shelfEnd > (int32_t)BufferLength)
+		shelfEnd = (int32_t)BufferLength;
+
+	for (i = crossIndex; i < shelfEnd; ++i)
 	{
 		if (Buffer[i] < Vd)
-			return true;
+			return false;
 	}
-	return false;
+
+	return true;
 }
 //----------------------------------------------

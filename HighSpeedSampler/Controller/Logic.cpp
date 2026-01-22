@@ -274,7 +274,6 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (UseVoltage && !SCOPE_CURRENT_ONLY)
 					{
 						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd, &Index_Vd);
-						bool DutTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd);
 
 						sprintf_s(message, 256, "SetVd: %u", SetVd);
 						InfoPrint(IP_Info, message);
@@ -284,6 +283,8 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 						if (!ZeroCrossingCalcOK)
 							throw PROBLEM_CALC_VZ;
+
+						if (DutTrig) *DutTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd);
 
 						sprintf_s(message, 256, "Index V0: %d", Index_0V);
 						InfoPrint(IP_Info, message);
