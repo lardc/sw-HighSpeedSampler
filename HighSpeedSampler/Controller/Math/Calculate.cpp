@@ -192,30 +192,15 @@ bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t VdIndex, uint16
 	if (Buffer == NULL || BufferLength == 0 || VdIndex >= BufferLength)
 		return false;
 
-	int32_t crossIndex = -1;
-	for (i = (int32_t)VdIndex - 1; i >= 0; --i)
+	int32_t shelfSamples = 0;
+	for (i = 0; i < BufferLength; ++i)
 	{
-		if (Buffer[i] < Vd && Buffer[i + 1] >= Vd)
-		{
-			crossIndex = i + 1;
-			break;
-		}
+		if (Buffer[i] >= Vd)
+			shelfSamples++;
 	}
 
-	if (crossIndex < 0)
+	if (shelfSamples * SAMPLING_TIME_FRACTION < (float)DataTable[REG_SHELF_DUT_US])
 		return false;
-
-	uint32_t shelfSamples = (uint32_t)((float)DataTable[REG_SHELF_DUT_US] / SAMPLING_TIME_FRACTION);
-
-	int32_t shelfEnd = crossIndex + (int32_t)shelfSamples;
-	if (shelfEnd > (int32_t)BufferLength)
-		shelfEnd = (int32_t)BufferLength;
-
-	for (i = crossIndex; i < shelfEnd; ++i)
-	{
-		if (Buffer[i] < Vd)
-			return false;
-	}
 
 	return true;
 }

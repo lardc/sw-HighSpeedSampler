@@ -215,7 +215,7 @@ void CONTROL_HandleSamplerData()
 	{
 		if (SAMPLING_Finished())
 		{
-			bool CalcOK, DutTrig;
+			bool CalcOK, DutTrig = false;
 			uint16_t CalcProblem = 0;
 			uint32_t Index0 = 0, Index0V = 0;
 			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0, Vd = 0, Time09 = 0;
