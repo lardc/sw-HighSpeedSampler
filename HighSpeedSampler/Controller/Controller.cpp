@@ -218,12 +218,12 @@ void CONTROL_HandleSamplerData()
 			bool CalcOK;
 			uint16_t CalcProblem = 0;
 			uint32_t Index0 = 0, Index0V = 0;
-			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0, Vd = 0, Time09 = 0;
+			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0, Vd = 0, Time09 = 0, RevVolt = 0;
 			float ts_time = 0, tf_time = 0;
 
 			InfoPrint(IP_Info, "Sampling finished");
 			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt, &Id, &Vd,
-														 (DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true, &Index0V, &Time09, &ts_time, &tf_time);
+														 (DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true, &Index0V, &Time09, &ts_time, &tf_time, &RevVolt);
 			CalcOK = (CalcProblem == PROBLEM_NONE) ? true : false;
 			uint32_t intQrr = (uint32_t)(Qrr * 10);
 
@@ -239,6 +239,7 @@ void CONTROL_HandleSamplerData()
 			DataTable[REG_RESULT_TIME_0_90] = (uint16_t)(Time09 * 100);
 			DataTable[REG_RESULT_TS] = (uint16_t)(ts_time * 100);
 			DataTable[REG_RESULT_TF] = (uint16_t)(tf_time * 100);
+			DataTable[REG_RESULT_REV_VOLT] = (uint16_t)RevVolt;
 
 			if (status != PICO_OK)
 				CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);

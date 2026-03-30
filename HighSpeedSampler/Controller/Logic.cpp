@@ -111,7 +111,7 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 }
 // ----------------------------------------
 
-PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* ts_time, float* tf_time)
+PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* ts_time, float* tf_time, float* RevVolt)
 {
 	char message[256];
 
@@ -286,6 +286,15 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					else
 						Index_0V = 0;
 					if (Index0V) *Index0V = Index_0V;
+
+					// Calculate reverse voltage amplitude
+					if (UseVoltage && !SCOPE_CURRENT_ONLY)
+					{
+						*RevVolt = Calc_RevVolt(MEMBUF_fScopeVFiltered, Index_0, Index_0V);
+
+						sprintf_s(message, 256, "Reverse Voltage Amplitude: %.1f", *RevVolt);
+						InfoPrint(IP_Info, message);
+					}
 				}
 				catch(int problem)
 				{
