@@ -239,7 +239,7 @@ void CONTROL_HandleSamplerData()
 			DataTable[REG_RESULT_TIME_0_90] = (uint16_t)(Time09 * 100);
 			DataTable[REG_RESULT_TS] = (uint16_t)(ts_time * 100);
 			DataTable[REG_RESULT_TF] = (uint16_t)(tf_time * 100);
-			DataTable[REG_RESULT_REV_VOLT] = (uint16_t)RevVolt;
+			DataTable[REG_RESULT_REV_VOLT] = (uint16_t)((int16_t)RevVolt);
 
 			if (status != PICO_OK)
 				CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
@@ -283,6 +283,7 @@ void CONTROL_FillWPPartDefault()
 	DataTable[REG_RESULT_QRR_B32] = 0;
 	DataTable[REG_RESULT_TS] = 0;
 	DataTable[REG_RESULT_TF] = 0;
+	DataTable[REG_RESULT_REV_VOLT] = 0;
 
 	DataTable[REG_EP_ELEMENTARY_FRACT] = (uint16_t)(SAMPLING_TIME_FRACTION * 1000);
 	DataTable[REG_EP_STEP_FRACTION_CNT] = 1;
