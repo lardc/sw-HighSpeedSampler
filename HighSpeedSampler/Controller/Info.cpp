@@ -15,7 +15,7 @@ char *StrError = "ERR :";
 
 // Functions
 //
-void InfoPrint(InfoPrintParam Param, char *Message)
+void InfoPrint(InfoPrintParam Param, const char* Message)
 {
 	char *Description = "";
 

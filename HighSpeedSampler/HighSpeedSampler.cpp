@@ -11,6 +11,8 @@
 #include "Controller.h"
 #include "ConfigFile.h"
 #include "Info.h"
+#include "Platform\git_info.h"
+#include <string>
 
 // Functions
 //
@@ -18,6 +20,11 @@ int _tmain(int argc, _TCHAR* argv[])
 {
 	int PortNumber, PortBR;
 
+	// Print Firmware Info
+	InfoPrint(IP_Info, (std::string("Git Branch: ") + git_branch).c_str());
+	InfoPrint(IP_Info, (std::string("Git Commit: ") + git_commit).c_str());
+	InfoPrint(IP_Info, (std::string("Commit date: ") + git_date).c_str());
+	InfoPrint(IP_Info, (std::string("Project: ") + git_proj).c_str());
 	// Load configuration
 	try
 	{

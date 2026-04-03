@@ -69,6 +69,7 @@ void CONTROL_Init()
 
 	// Init data table
 	DT_Init(EPROMService, FALSE);
+	DT_SaveFirmwareInfo(0, 0);
 	// Fill state variables with default values
 	CONTROL_FillWPPartDefault();
 
