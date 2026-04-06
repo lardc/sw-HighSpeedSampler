@@ -139,7 +139,7 @@
 #define REG_FWINFO_MASTER_NID		257	// Device CAN master node ID (if presented)
 // 258 - 259
 #define REG_FWINFO_STR_LEN			260	// Length of the information string record
-#define REG_FWINFO_STR_BEGIN		261	// Begining of the information string record
+#define REG_FWINFO_STR_BEGIN		261	// Beginning of the information string record
 
 // -----------------------------------------------
 

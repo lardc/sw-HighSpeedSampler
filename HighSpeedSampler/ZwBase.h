@@ -5,8 +5,8 @@
 #ifndef __ZW_BASE_H
 #define __ZW_BASE_H
 
-#include "stdbool.h"
-#include "stdint.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 // Common definitions
 //
@@ -69,7 +69,11 @@ typedef enum __bool_val_c
 #endif
 
 #ifndef NULL
+#ifdef __cplusplus
+#include <cstddef>
+#else
 #define NULL				((void *)0)
+#endif
 #endif
 
 // Limits

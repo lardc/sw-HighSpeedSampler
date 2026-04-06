@@ -1,5 +1,6 @@
 // Header
 #include "stdafx.h"
+#include "ZwBase.h"
 #include "FirmwareInfo.h"
 
 // Includes
@@ -8,7 +9,7 @@
 #include "DataTable.h"
 
 // Forward functions
-void FWINF_AppendSymbol(pInt16U DataTable, Int16U Symbol, Int16U Counter);
+void FWINF_AppendSymbol(pInt16U DataTable, Int8U Symbol, Int16U Counter);
 void FWINF_AppendString(pInt16U DataTable, const char *String, Int16U StringLen, pInt16U pCounter, Int16U MaxLength, bool IsLastString);
 
 // Functions
@@ -61,7 +62,7 @@ void FWINF_AppendString(pInt16U DataTable, const char *String, Int16U StringLen,
 }
 // ----------------------------------------
 
-void FWINF_AppendSymbol(pInt16U DataTable, Int16U Symbol, Int16U Counter)
+void FWINF_AppendSymbol(pInt16U DataTable, Int8U Symbol, Int16U Counter)
 {
 #ifdef USE_FLOAT_DT
 	float *TablePointer = (float *)DataTable;

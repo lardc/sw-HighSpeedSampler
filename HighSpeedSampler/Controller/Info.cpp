@@ -6,7 +6,7 @@
 // Includes
 //
 #include <stdio.h>
-#include < Windows.h >
+#include <Windows.h>
 
 // Variables
 char *StrInfo  = "INFO:";
