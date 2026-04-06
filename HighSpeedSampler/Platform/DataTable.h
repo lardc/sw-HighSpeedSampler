@@ -31,7 +31,7 @@
  *		END OF READ-ONLY AREA		------------- 255
  * 		START OF READ-ONLY FW INFO AREA	--------- 256
  * 			[VOLATILE R-O AREA]
- * 		END OF READ-ONLY FW INFO AREA	--------- 300
+ * 		END OF READ-ONLY FW INFO AREA	--------- 299
  * DATA TABLE END 					------------- [300]
  */
 
