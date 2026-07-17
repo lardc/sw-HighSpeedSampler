@@ -6,6 +6,7 @@
 // Includes
 //
 #include <stdio.h>
+#include <Windows.h>
 
 // Variables
 char *StrInfo  = "INFO:";
@@ -34,4 +35,11 @@ void InfoPrint(InfoPrintParam Param, char *Message)
 	}
 
 	printf("%s %s\n", Description, Message);
+}
+
+void PrintTime()
+{
+	SYSTEMTIME LocTime;
+	GetLocalTime(&LocTime);
+	printf("Sample created at %04d-%02d-%02d %02d:%02d:%02d\n", LocTime.wYear, LocTime.wMonth, LocTime.wDay, LocTime.wHour, LocTime.wMinute, LocTime.wSecond);
 }

@@ -4,7 +4,11 @@
 // Includes
 //
 #include <stdint.h>
-#include "Controller.h"
+
+// Definitions
+//
+#define VALUES_READx_SIZE		2000
+#define VALUES_WRITEx_SIZE		2000
 
 // Types
 //

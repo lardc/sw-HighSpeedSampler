@@ -33,6 +33,8 @@
 #define REG_V_FINE_D				7	// Voltage fine tune K (D)
 #define REG_V_FINE_OFFSET			8	// Voltage fine offset (x10 in V)
 //
+#define REG_EP_SIZE_REDEFINE		10	// ѕереопределени€ размера EP с током и напр€жением
+//
 #define REG_SP__1					127
 //
 // ----------------------------------------
