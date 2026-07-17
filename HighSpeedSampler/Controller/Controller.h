@@ -9,6 +9,7 @@
 //
 #define VALUES_READx_SIZE		2000
 #define VALUES_WRITEx_SIZE		2000
+#define VALUES_DEFx_SIZE		500
 
 // Types
 //
