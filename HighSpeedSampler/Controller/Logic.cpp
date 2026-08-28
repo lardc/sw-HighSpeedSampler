@@ -16,7 +16,6 @@
 #include "Platform\DataTable.h"
 #include "Platform\DeviceObjectDictionary.h"
 #include "Info.h"
-#include "Global.h"
 
 // Variables
 //
@@ -111,7 +110,8 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 }
 // ----------------------------------------
 
-PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* ts_time, float* tf_time)
+PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr,
+	float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* ts_time, float* tf_time)
 {
 	char message[256];
 
@@ -131,7 +131,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 	{
 		MEMBUF_Scope_Counter = NSamples;
 
-		sprintf_s(message, 256, "NSamplies: %d; TSamplies: %.f", NSamples, NSamples * SAMPLING_TIME_FRACTION);
+		sprintf_s(message, 256, "Number of samplies: %d; sampling time: %.3f", NSamples, NSamples * SAMPLING_TIME_FRACTION);
 		InfoPrint(IP_Info, message);
 
 		if ((status = SAMPLER_GetValues(&MEMBUF_Scope_Counter)) == PICO_OK)
@@ -445,11 +445,8 @@ void LOGIC_VoltageToFile()
 // ----------------------------------------
 
 uint32_t LOGIC_GetSamplingSamples()
-
 {
-	uint32_t n_const = (uint32_t)(SAMPLING_T_CONST / SAMPLING_TIME_FRACTION);
 	float t_fall = (DataTable[REG_DC_FALL_TIME] > 0) ? (float)DataTable[REG_DC_FALL_TIME] : 0.0f;
-	uint32_t n_fall = (uint32_t)(t_fall / SAMPLING_TIME_FRACTION);
-	return n_const + n_fall;
+	return (uint32_t)((SAMPLING_T_CONST + t_fall) / SAMPLING_TIME_FRACTION);
 }
 // ----------------------------------------
