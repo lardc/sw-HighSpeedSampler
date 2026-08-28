@@ -2,7 +2,7 @@
 setlocal
 
 rem Generate directly into the folder used by firmware includes.
-set "file_output=%~dp0Platform\git_info.h"
+set "file_output=%~dp0git_info.h"
 
 (
 echo #ifndef __GIT_INFO_H

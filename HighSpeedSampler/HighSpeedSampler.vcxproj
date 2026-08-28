@@ -52,7 +52,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>d:\proton\Test equipment\QRR Tester\QSU\PC Soft\HighSpeedSampler\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -83,7 +83,8 @@
       <AdditionalDependencies>External\ps5000a.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /f /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config" &amp;&amp; xcopy /f /y "$(ProjectDir)HighSpeedSampler.cmd" "$(OutDir)HighSpeedSampler.cmd"</Command>
+      <Command>copy /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config" &amp;&amp; copy /y "$(ProjectDir)HighSpeedSampler.cmd" "$(OutDir)HighSpeedSampler.cmd"
+</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>"$(ProjectDir)gen_git_info.bat"</Command>

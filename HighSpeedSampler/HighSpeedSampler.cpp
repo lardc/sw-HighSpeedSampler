@@ -11,7 +11,7 @@
 #include "Controller\Controller.h"
 #include "External\ConfigFile.h"
 #include "Controller\Info.h"
-#include "Platform\git_info.h"
+#include "git_info.h"
 #include <string>
 
 // Functions
