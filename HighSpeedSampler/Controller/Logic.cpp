@@ -115,8 +115,6 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 {
 	char message[256];
 
-	uint32_t i, Index_0, Index_irr, Index_trr, Index_025, Index_09, Index_0V;
-	float Corr_trr, Corr_trr_P2, Corr_trr_P1, Corr_trr_P0, Index_0_trr;
 	PICO_STATUS status;
 	bool InvertCurrent = (DataTable[REG_INVERT_CURRENT] == 1);
 	float Actual_dIdt = 0;
@@ -150,11 +148,11 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 				if (InvertCurrent)
 				{
-					for (i = 0; i < MEMBUF_Scope_Counter; ++i)
+					for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
 						MEMBUF_ScopeI[i] = -MEMBUF_ScopeI[i];
 				}
 				
-				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
+				for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
 				{
 					float ScopeI = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i]) / (INT16_MAX * ShuntResCache * 0.001f);
 					MEMBUF_fScopeI[i] = ScopeI * ScopeI * P2_I + ScopeI * P1_I + P0_I;
@@ -177,7 +175,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 				if (!SCOPE_CURRENT_ONLY)
 				{
-					for (i = 0; i < MEMBUF_Scope_Counter; ++i)
+					for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
 					{
 						float ScopeU = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX);
 						MEMBUF_fScopeV[i] = ScopeU * ScopeU * P2_U + ScopeU * P1_U + P0_U;
@@ -194,6 +192,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					// Calculate Index0 and Irr parameters
+					uint32_t Index_0 = 0, Index_irr = 0;
 					if (!CALC_IrrAndZeroCrossingIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, &Index_0, &Index_irr))
 						throw PROBLEM_CALC_IRR;
 
@@ -204,43 +203,54 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					// Calculate Irr pivot points
+					uint32_t Index_025 = 0;
 					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_irr, UseTrr050Method ? 0.5f : 0.25f, &Index_025))
 						throw PROBLEM_CALC_IRR_025;
 
-					sprintf_s(message, 256, "Index Irr_low: %d", Index_025);
+					sprintf_s(message, 256, "Index Irr_low (0.25): %d", Index_025);
 					InfoPrint(IP_Info, message);
 
+					uint32_t Index_09 = 0;
 					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_irr, 0.9f, &Index_09))
 						throw PROBLEM_CALC_IRR_090;
 
-					sprintf_s(message, 256, "Index Irr_high: %d", Index_09);
+					sprintf_s(message, 256, "Index Irr_high (0.9): %d", Index_09);
 					InfoPrint(IP_Info, message);
 
 					// Calculate trr and Qrr
-					Index_trr = CALC_trrIndex(MEMBUF_fScopeIFiltered[Index_025], MEMBUF_fScopeIFiltered[Index_09], Index_025, Index_09);
+					uint32_t Index_trr = CALC_trrIndex(MEMBUF_fScopeIFiltered[Index_025], MEMBUF_fScopeIFiltered[Index_09], Index_025, Index_09);
 
-					Corr_trr_P2 = (float)(int16_t)DataTable[REG_TRR_P2] / 1e11f;
-					Corr_trr_P1 = (float)(int16_t)DataTable[REG_TRR_P1] / 1e4f;
-					Corr_trr_P0 = (float)(int16_t)DataTable[REG_TRR_P0] / 1e4f;
-					Index_0_trr = (float)(Index_trr - Index_0);
+					uint32_t trr_ticks = (Index_trr > Index_0) ? Index_trr - Index_0 : 0;
+					float trr_raw = SAMPLING_TIME_FRACTION * trr_ticks;
 
-					sprintf_s(message, 256, "Index_0_trr: %f", Index_0_trr);
+					float trr_P2 = 0.0f, trr_P1 = 1.0f, trr_P0 = 0.0f;
+					try
+					{
+						trr_P2 = (float)(int16_t)DataTable[REG_TRR_P2] / powf(10, DataTable[REG_TRR_P2_POW]);
+						trr_P1 = (float)DataTable[REG_TRR_P1] / powf(10, DataTable[REG_TRR_P1_POW]);
+						trr_P0 = (float)(int16_t)DataTable[REG_TRR_P0] / powf(10, DataTable[REG_TRR_P0_POW]);
+					}
+					catch (...)
+					{
+						InfoPrint(IP_Warn, "Incorrect trr fine tune registers");
+					}
+
+					sprintf_s(message, 256, "trr fine tune P2: %e, P1: %e, P0: %e", trr_P2, trr_P1, trr_P0);
 					InfoPrint(IP_Info, message);
 
-					sprintf_s(message, 256, "Index trr: %d", Index_trr);
+					float trr_fixed = trr_raw * trr_raw * trr_P2 + trr_raw * trr_P1 + trr_P0;
+					if (trr) *trr = trr_fixed;
+
+					sprintf_s(message, 256, "Index trr: %d, trr ticks: %d, trr_raw: %.3f, trr: %.3f",
+						Index_trr, trr_ticks, trr_raw, trr_fixed);
 					InfoPrint(IP_Info, message);
 
-					sprintf_s(message, 256, "Correct Trr : P2: %.11f ; P1: %.4f ; P0: %.4f", Corr_trr_P2, Corr_trr_P1, Corr_trr_P0);
-					InfoPrint(IP_Info, message);
-					
-					Corr_trr = (float)(Index_0_trr * Index_0_trr * Corr_trr_P2 + Index_0_trr * Corr_trr_P1 + Corr_trr_P0) / (Index_0_trr * SAMPLING_TIME_FRACTION);
-					
-					sprintf_s(message, 256, "Corr_trr: %.6f", Corr_trr);
-					InfoPrint(IP_Info, message);
+					// TODO: дальше код не рефакторился
+					float Corr_trr = 1.0f;
 
 					*Time09 = (float)(Index_09 - Index_0) * SAMPLING_TIME_FRACTION * Corr_trr;
 
-					sprintf_s(message, 256, "Time 0_90: %.3f ms", *Time09);
+					sprintf_s(message, 256, "Time 0.90: %.3f ms", *Time09);
 					InfoPrint(IP_Info, message);
 				
 					if (trr) *trr = SAMPLING_TIME_FRACTION * Corr_trr * ((Index_trr > Index_0) ? (Index_trr - Index_0) : 0);
@@ -249,6 +259,8 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					uint16_t Index_0_ts = Index_irr - Index_0;
 					if (ts_time) *ts_time = Index_0_ts * SAMPLING_TIME_FRACTION * Corr_trr;
 
+					// заглушка
+					uint32_t Index_0_trr = 0;
 					uint16_t tf = Index_0_trr - Index_0_ts;
 					if (tf_time) *tf_time = tf * SAMPLING_TIME_FRACTION * Corr_trr;
 
@@ -271,6 +283,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					// Calculate voltage zero crossing
+					uint32_t Index_0V = 0;
 					if (UseVoltage && !SCOPE_CURRENT_ONLY)
 					{
 						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd);
@@ -283,8 +296,6 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 						sprintf_s(message, 256, "Index V0: %d", Index_0V);
 						InfoPrint(IP_Info, message);
 					}
-					else
-						Index_0V = 0;
 					if (Index0V) *Index0V = Index_0V;
 				}
 				catch(int problem)
