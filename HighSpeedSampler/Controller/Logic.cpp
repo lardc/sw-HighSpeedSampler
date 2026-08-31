@@ -225,6 +225,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 						Index_025, Index_09);
 
 					uint32_t trr_ticks = (Index_trr > Index_0) ? Index_trr - Index_0 : 0;
+					if (trr_ticks == 0)
+						throw PROBLEM_CALC_TRR;
+
 					float trr_raw = SAMPLING_TIME_FRACTION * trr_ticks;
 
 					float trr_P2 = 0.0f, trr_P1 = 1.0f, trr_P0 = 0.0f;
@@ -243,6 +246,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					float trr_tuned = trr_raw * trr_raw * trr_P2 + trr_raw * trr_P1 + trr_P0;
+					if (trr_tuned <= 0.0f)
+						throw PROBLEM_CALC_TRR;
+
 					if (trr) *trr = trr_tuned;
 
 					float TunedSamplingTimeFraction = trr_tuned / trr_ticks;
@@ -268,7 +274,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (trf) *trf = _trf;
 				
 					// Calculate Qrr
-					float _Qrr = fabsf(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, TunedSamplingTimeFraction));
+					float _Qrr = CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, TunedSamplingTimeFraction);
+					if (_Qrr <= 0.0f)
+						throw PROBLEM_CALC_QRR;
 					sprintf_s(message, 256, "Qrr: %.2f", _Qrr);
 					InfoPrint(IP_Info, message);
 					if (Qrr) *Qrr = _Qrr;

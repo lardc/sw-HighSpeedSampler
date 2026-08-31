@@ -98,7 +98,7 @@ float CALC_Qrr(float* Buffer, uint32_t BufferLength, uint32_t t0, uint32_t trr, 
 		Qrr += Buffer[i];
 	Qrr += (Buffer[t0] + Buffer[trr]) * 0.5f;
 
-	return (float)(TimeFraction * Qrr);
+	return (float)(-TimeFraction * Qrr);
 }
 //----------------------------------------------
 

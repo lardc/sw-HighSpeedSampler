@@ -171,6 +171,8 @@
 #define PROBLEM_CALC_IRR_090		3	// Problem calculating 90% fraction Irr
 #define PROBLEM_CALC_VZ				4	// Problem calculating V zero crossing
 #define PROBLEM_CALC_DIDT			5	// Problem calculating actual dIdt
+#define PROBLEM_CALC_TRR			6	// Problem calculating trr
+#define PROBLEM_CALC_QRR			7	// Problem calculating Qrr
 
 // FAULT & DISABLE
 //

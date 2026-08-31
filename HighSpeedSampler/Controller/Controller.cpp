@@ -284,6 +284,7 @@ void CONTROL_FillWPPartDefault()
 	DataTable[REG_RESULT_QRR_B32] = 0;
 	DataTable[REG_RESULT_TRS] = 0;
 	DataTable[REG_RESULT_TRF] = 0;
+	DataTable[REG_RESULT_TIME_0_90] = 0;
 
 	DataTable[REG_EP_ELEMENTARY_FRACT] = (uint16_t)(SAMPLING_TIME_FRACTION * 1000);
 	DataTable[REG_EP_STEP_FRACTION_CNT] = 1;
