@@ -60,8 +60,12 @@
       <AdditionalDependencies>External\ps5000a.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /f /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config"</Command>
+      <Command>copy /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config" &amp;&amp; copy /y "$(ProjectDir)HighSpeedSampler.cmd" "$(OutDir)HighSpeedSampler.cmd"
+</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>"$(ProjectDir)gen_git_info.bat"</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
