@@ -14,6 +14,7 @@
 //
 static int16_t VHandler, IHandler;
 static bool SamplingVDone = false, SamplingIDone = false;
+static bool SamplingVLogged = false, SamplingILogged = false;
 static PS5000A_RANGE SavedVRange = SAMPLING_DEFAULT_RANGE, SavedIRange = SAMPLING_DEFAULT_RANGE;
 
 // Functions
@@ -246,11 +247,13 @@ PICO_STATUS SAMPLER_ActivateSampling()
 	if (DIAG_EMULATE_SCOPES)
 	{
 		SamplingVDone = SamplingIDone = true;
+		SamplingVLogged = SamplingILogged = false;
 		return PICO_OK;
 	}
 
 	PICO_STATUS ret_val = PICO_OK;
 	SamplingVDone = SamplingIDone = false;
+	SamplingVLogged = SamplingILogged = false;
 
 	if (SCOPE_CURRENT_ONLY)
 		SamplingVDone = true;
@@ -268,10 +271,15 @@ bool SAMPLING_Finished()
 {
 	if (SamplingVDone)
 	{
-		InfoPrint(IP_Info, "V Sampling Finish");
-		if (SamplingIDone)
+		if (!SamplingVLogged)
+		{
+			InfoPrint(IP_Info, "V Sampling Finish");
+			SamplingVLogged = true;
+		}
+		if (SamplingIDone && !SamplingILogged)
 		{
 			InfoPrint(IP_Info, "I Sampling Finish");
+			SamplingILogged = true;
 		}
 	}
 	return (SamplingVDone && SamplingIDone);
