@@ -48,9 +48,6 @@ PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler, PICO_STATU
 }
 //----------------------------------------------
 
-#pragma warning( push )
-#pragma warning( disable : 6286 )
-
 PICO_STATUS SAMPLER_Open(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent, PICO_STATUS *VOpenStatus, PICO_STATUS *IOpenStatus)
 {
 	PICO_STATUS ret_val = PICO_OK;
@@ -323,5 +320,3 @@ PICO_STATUS SAMPLER_Stop()
 	return ret_val;
 }
 //----------------------------------------------
-
-#pragma warning( pop )
