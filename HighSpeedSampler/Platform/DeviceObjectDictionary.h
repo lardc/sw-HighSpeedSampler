@@ -131,6 +131,7 @@
 #define REG_RESULT_TRS				210 // Time trs (in us x100)
 #define REG_RESULT_TRF				211 // Time trf (in us x100)
 #define REG_RESULT_TIME_0_90		212	// Time 0 - 90 Irr (in us x100) 
+#define REG_RESULT_VR_MIN			214	// Vr_min (in V) 
 //
 #define REG_EP_ELEMENTARY_FRACT		220	// Elementary fraction length in ns
 #define REG_EP_STEP_FRACTION_CNT	221	// Number of elementary fractions in the EP single step

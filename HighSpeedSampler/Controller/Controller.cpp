@@ -219,13 +219,13 @@ void CONTROL_HandleSamplerData()
 			bool CalcOK;
 			uint16_t CalcProblem = 0;
 			uint32_t Index0 = 0, Index0V = 0;
-			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0, Vd = 0, Time09 = 0;
+			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0, Vd = 0, Time09 = 0, Vr_min = 0;
 			float trs = 0, trf = 0;
 
 			InfoPrint(IP_Info, "Sampling finished");
 			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt, &Id, &Vd,
 				(DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true,
-				&Index0V, &Time09, &trs, &trf);
+				&Index0V, &Time09, &trs, &trf, &Vr_min);
 			CalcOK = (CalcProblem == PROBLEM_NONE) ? true : false;
 			uint32_t intQrr = (uint32_t)(Qrr * 10);
 
@@ -241,6 +241,7 @@ void CONTROL_HandleSamplerData()
 			DataTable[REG_RESULT_TIME_0_90] = (uint16_t)(Time09 * 100);
 			DataTable[REG_RESULT_TRS] =		(uint16_t)(trs * 100);
 			DataTable[REG_RESULT_TRF] =		(uint16_t)(trf * 100);
+			DataTable[REG_RESULT_VR_MIN] =	(uint16_t)((int16_t)Vr_min);
 
 			if (status != PICO_OK)
 				CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
@@ -285,6 +286,7 @@ void CONTROL_FillWPPartDefault()
 	DataTable[REG_RESULT_TRS] = 0;
 	DataTable[REG_RESULT_TRF] = 0;
 	DataTable[REG_RESULT_TIME_0_90] = 0;
+	DataTable[REG_RESULT_VR_MIN] = 0;
 
 	DataTable[REG_EP_ELEMENTARY_FRACT] = (uint16_t)(SAMPLING_TIME_FRACTION * 1000);
 	DataTable[REG_EP_STEP_FRACTION_CNT] = 1;
