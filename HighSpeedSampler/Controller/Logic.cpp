@@ -137,14 +137,19 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 			if ((status = SAMPLER_Stop()) == PICO_OK)
 			{
 				// Convert to current
-				uint16_t DToffset = REG_I_3_P2 + (SAMPLER_GetSavedIRange() - 3) * 3;
-				float P2_I = (float)(int16_t)DataTable[DToffset] / 1e6f;
-				float P1_I = (float)DataTable[DToffset + 1] / 1e3f;
-				float P0_I = (float)(int16_t)DataTable[DToffset + 2];
+				float P2_I = 0.0f, P1_I = 1.0f, P0_I = 0.0f;
+				PS5000A_RANGE IRange = SAMPLER_GetSavedIRange();
+				if (IRange >= PS5000A_100MV && IRange <= PS5000A_5V)
+				{
+					uint16_t DToffset = REG_I_3_P2 + (IRange - PS5000A_100MV) * 3;
+					P2_I = (float)(int16_t)DataTable[DToffset] / 1e6f;
+					P1_I = (float)DataTable[DToffset + 1] / 1e3f;
+					P0_I = (float)(int16_t)DataTable[DToffset + 2];
+				}
 
 				// Diagnostic output
 				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f",
-					ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), P2_I, P1_I, P0_I);
+					ShuntResCache, IRange, SAMPLER_GetIRangeCoeff(), P2_I, P1_I, P0_I);
 				InfoPrint(IP_Info, message);
 
 				if (InvertCurrent)
@@ -165,14 +170,19 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				// Convert to voltage
 				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
 
-				DToffset = REG_U_5_P2 + (SAMPLER_GetSavedVRange() - 5) * 3;
-				float P2_U = (float)(int16_t)DataTable[DToffset] / 1e6f;
-				float P1_U = (float)DataTable[DToffset + 1] / 1e3f;
-				float P0_U = (float)(int16_t)DataTable[DToffset + 2];
+				float P2_U = 0.0f, P1_U = 1.0f, P0_U = 0.0f;
+				PS5000A_RANGE VRange = SAMPLER_GetSavedVRange();
+				if (VRange >= PS5000A_500MV && VRange <= PS5000A_10V)
+				{
+					uint16_t DToffset = REG_U_5_P2 + (VRange - PS5000A_500MV) * 3;
+					P2_U = (float)(int16_t)DataTable[DToffset] / 1e6f;
+					P1_U = (float)DataTable[DToffset + 1] / 1e3f;
+					P0_U = (float)(int16_t)DataTable[DToffset + 2];
+				}
 
 				// Diagnostic output
 				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f",
-					SAMPLER_GetSavedVRange(), SAMPLER_GetVRangeCoeff(), P2_U, P1_U, P0_U);
+					VRange, SAMPLER_GetVRangeCoeff(), P2_U, P1_U, P0_U);
 				InfoPrint(IP_Info, message);
 
 				if (!SCOPE_CURRENT_ONLY)
