@@ -464,6 +464,9 @@ void LOGIC_VoltageToFile()
 uint32_t LOGIC_GetSamplingSamples()
 {
 	float t_fall = (DataTable[REG_DC_FALL_TIME] > 0) ? (float)DataTable[REG_DC_FALL_TIME] : 0.0f;
-	return (uint32_t)((SAMPLING_T_CONST + t_fall) / SAMPLING_TIME_FRACTION);
+	uint32_t samples = (uint32_t)((SAMPLING_T_CONST + t_fall) / SAMPLING_TIME_FRACTION);
+	if (samples > (uint32_t)SAMPLING_SAMPLES)
+		samples = (uint32_t)SAMPLING_SAMPLES;
+	return samples;
 }
 // ----------------------------------------
