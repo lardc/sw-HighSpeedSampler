@@ -238,23 +238,13 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (trr_ticks == 0)
 						throw PROBLEM_CALC_TRR;
 
-					float trr_raw = SAMPLING_TIME_FRACTION * trr_ticks;
-
-					float trr_P2 = 0.0f, trr_P1 = 1.0f, trr_P0 = 0.0f;
-					try
-					{
-						trr_P2 = (float)(int16_t)DataTable[REG_TRR_P2] / powf(10, DataTable[REG_TRR_P2_POW]);
-						trr_P1 = (float)DataTable[REG_TRR_P1] / powf(10, DataTable[REG_TRR_P1_POW]);
-						trr_P0 = (float)(int16_t)DataTable[REG_TRR_P0] / powf(10, DataTable[REG_TRR_P0_POW]);
-					}
-					catch (...)
-					{
-						InfoPrint(IP_Warn, "Incorrect trr fine tune registers");
-					}
-
+					float trr_P2 = (float)(int16_t)DataTable[REG_TRR_P2] / 1e6f;
+					float trr_P1 = (float)DataTable[REG_TRR_P1] / 1e3f;
+					float trr_P0 = (float)(int16_t)DataTable[REG_TRR_P0];
 					sprintf_s(message, 256, "trr fine tune P2: %e, P1: %e, P0: %e", trr_P2, trr_P1, trr_P0);
 					InfoPrint(IP_Info, message);
 
+					float trr_raw = SAMPLING_TIME_FRACTION * trr_ticks;
 					float trr_tuned = trr_raw * trr_raw * trr_P2 + trr_raw * trr_P1 + trr_P0;
 					if (trr_tuned <= 0.0f)
 						throw PROBLEM_CALC_TRR;

@@ -83,11 +83,6 @@
 #define REG_TRR_P2					44	// Trr P2
 #define REG_TRR_P1					45	// Trr P1
 #define REG_TRR_P0					46	// Trr P0
-
-#define REG_TRR_P2_POW				47	// Trr P2 divisor power
-#define REG_TRR_P1_POW				48	// Trr P1 divisor power
-#define REG_TRR_P0_POW				49	// Trr P0 divisor power
-
 //
 #define REG_SP__1					127
 //
