@@ -89,7 +89,7 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 	
 	// Voltage parameters
 	float Vdiv = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
-	float Vmax = (float)fabs(SAMPLING_QRR_VR) * 2;
+	float Vmax = fabsf(SAMPLING_QRR_VR) * 2;
 	if (DataTable[REG_MEASURE_MODE] == MODE_QRR_TQ && DataTable[REG_VOLTAGE_AMPL] > Vmax)
 		Vmax = DataTable[REG_VOLTAGE_AMPL];
 	VoltageSet = Vdiv * Vmax;
@@ -111,7 +111,7 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 // ----------------------------------------
 
 PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr,
-	float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* ts_time, float* tf_time)
+	float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* trs, float* trf)
 {
 	char message[256];
 
@@ -143,7 +143,8 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				float P0_I = (float)(int16_t)DataTable[DToffset + 2];
 
 				// Diagnostic output
-				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f", ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), P2_I, P1_I, P0_I);
+				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f",
+					ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), P2_I, P1_I, P0_I);
 				InfoPrint(IP_Info, message);
 
 				if (InvertCurrent)
@@ -170,7 +171,8 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				float P0_U = (float)(int16_t)DataTable[DToffset + 2];
 
 				// Diagnostic output
-				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f", SAMPLER_GetSavedVRange(), SAMPLER_GetVRangeCoeff(), P2_U, P1_U, P0_U);
+				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f",
+					SAMPLER_GetSavedVRange(), SAMPLER_GetVRangeCoeff(), P2_U, P1_U, P0_U);
 				InfoPrint(IP_Info, message);
 
 				if (!SCOPE_CURRENT_ONLY)
@@ -197,14 +199,15 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 						throw PROBLEM_CALC_IRR;
 
 					if (Index0) *Index0 = Index_0;
-					if (Irr) *Irr = (float)fabs(MEMBUF_fScopeIFiltered[Index_irr]);
+					if (Irr) *Irr = fabsf(MEMBUF_fScopeIFiltered[Index_irr]);
 
 					sprintf_s(message, 256, "Index 0: %d; Index Irr: %d", Index_0, Index_irr);
 					InfoPrint(IP_Info, message);
 
 					// Calculate Irr pivot points
 					uint32_t Index_025 = 0;
-					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_irr, UseTrr050Method ? 0.5f : 0.25f, &Index_025))
+					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_irr,
+						UseTrr050Method ? 0.5f : 0.25f, &Index_025))
 						throw PROBLEM_CALC_IRR_025;
 
 					sprintf_s(message, 256, "Index Irr_low (0.25): %d", Index_025);
@@ -217,8 +220,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					sprintf_s(message, 256, "Index Irr_high (0.9): %d", Index_09);
 					InfoPrint(IP_Info, message);
 
-					// Calculate trr and Qrr
-					uint32_t Index_trr = CALC_trrIndex(MEMBUF_fScopeIFiltered[Index_025], MEMBUF_fScopeIFiltered[Index_09], Index_025, Index_09);
+					// Calculate trr and fixing sampling time
+					uint32_t Index_trr = CALC_trrIndex(MEMBUF_fScopeIFiltered[Index_025], MEMBUF_fScopeIFiltered[Index_09],
+						Index_025, Index_09);
 
 					uint32_t trr_ticks = (Index_trr > Index_0) ? Index_trr - Index_0 : 0;
 					float trr_raw = SAMPLING_TIME_FRACTION * trr_ticks;
@@ -238,36 +242,38 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					sprintf_s(message, 256, "trr fine tune P2: %e, P1: %e, P0: %e", trr_P2, trr_P1, trr_P0);
 					InfoPrint(IP_Info, message);
 
-					float trr_fixed = trr_raw * trr_raw * trr_P2 + trr_raw * trr_P1 + trr_P0;
-					if (trr) *trr = trr_fixed;
+					float trr_tuned = trr_raw * trr_raw * trr_P2 + trr_raw * trr_P1 + trr_P0;
+					if (trr) *trr = trr_tuned;
 
-					sprintf_s(message, 256, "Index trr: %d, trr ticks: %d, trr_raw: %.3f, trr: %.3f",
-						Index_trr, trr_ticks, trr_raw, trr_fixed);
+					float TunedSamplingTimeFraction = trr_tuned / trr_ticks;
+
+					sprintf_s(message, 256, "Index trr: %d, trr ticks: %d, trr_raw: %.3f, trr_tuned: %.3f, tuned time fraction: %.6f",
+						Index_trr, trr_ticks, trr_raw, trr_tuned, TunedSamplingTimeFraction);
 					InfoPrint(IP_Info, message);
 
-					// TODO: дальше код не рефакторился
-					float Corr_trr = 1.0f;
+					// Calculate time from zero crossing to 0.9 irr from rising side
+					if (Time09)
+					{
+						*Time09 = TunedSamplingTimeFraction * (Index_09 - Index_0);
+						sprintf_s(message, 256, "Time 0.90: %.3f", *Time09);
+						InfoPrint(IP_Info, message);
+					}
 
-					*Time09 = (float)(Index_09 - Index_0) * SAMPLING_TIME_FRACTION * Corr_trr;
-
-					sprintf_s(message, 256, "Time 0.90: %.3f ms", *Time09);
+					// Calculate trs, trf
+					float _trs = TunedSamplingTimeFraction * (Index_irr - Index_0);
+					float _trf = trr_tuned - _trs;
+					sprintf_s(message, 256, "trs: %.3f, trf: %.3f", _trs, _trf);
 					InfoPrint(IP_Info, message);
+					if (trs) *trs = _trs;
+					if (trf) *trf = _trf;
 				
-					if (trr) *trr = SAMPLING_TIME_FRACTION * Corr_trr * ((Index_trr > Index_0) ? (Index_trr - Index_0) : 0);
-					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION * Corr_trr));
-
-					uint16_t Index_0_ts = Index_irr - Index_0;
-					if (ts_time) *ts_time = Index_0_ts * SAMPLING_TIME_FRACTION * Corr_trr;
-
-					// заглушка
-					uint32_t Index_0_trr = 0;
-					uint16_t tf = Index_0_trr - Index_0_ts;
-					if (tf_time) *tf_time = tf * SAMPLING_TIME_FRACTION * Corr_trr;
-
-					sprintf_s(message, 256, "ts_time: %.3f ms; tf_time: %.3f ms", ts_time, tf_time);
+					// Calculate Qrr
+					float _Qrr = fabsf(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, TunedSamplingTimeFraction));
+					sprintf_s(message, 256, "Qrr: %.2f", _Qrr);
 					InfoPrint(IP_Info, message);
+					if (Qrr) *Qrr = _Qrr;
 
-					// Calculate actual dIdt
+					// Calculate actual dIdt (unfixed sampling time is used)
 					if (!CALC_dIdt(MEMBUF_fScopeIFiltered, Index_0, Index_irr, SAMPLING_TIME_FRACTION, &Actual_dIdt))
 						throw PROBLEM_CALC_DIDT;
 

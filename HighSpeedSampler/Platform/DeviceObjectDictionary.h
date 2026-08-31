@@ -128,8 +128,8 @@
 #define REG_RESULT_ID				207	// Direct current amplitude (in A)
 #define REG_RESULT_VD				208	// Direct voltage amplitude (in V)
 #define REG_RESULT_QRR_B32			209	// Reverse recovery charge (in uQ x10) 32bit part
-#define REG_RESULT_TS				210 // Time ts (in us x100)
-#define REG_RESULT_TF				211 // Time tf (in us x100)
+#define REG_RESULT_TRS				210 // Time trs (in us x100)
+#define REG_RESULT_TRF				211 // Time trf (in us x100)
 #define REG_RESULT_TIME_0_90		212	// Time 0 - 90 Irr (in us x100) 
 //
 #define REG_EP_ELEMENTARY_FRACT		220	// Elementary fraction length in ns
