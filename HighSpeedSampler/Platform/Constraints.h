@@ -35,6 +35,9 @@ typedef struct __TableItemConstraint
 #define VOLTAGE_AMPL_MIN		100		// in V
 #define VOLTAGE_AMPL_MAX		4500	// in V
 #define VOLTAGE_AMPL_DEF		2000	// in V
+//
+#define FLATTOP_DUT_US_DEF		100		// in us
+#define FLATTOP_DUT_HYST_DEF	900		// 0.9 * 1000
 
 
 // Variables

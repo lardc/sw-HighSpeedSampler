@@ -152,7 +152,7 @@ float CALC_Id(float* Buffer, uint32_t t0)
 }
 //----------------------------------------------
 
-bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex, float* Vd)
+bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex, float* Vd, uint32_t* VdIndex)
 {
 	int32_t i, Vdmax_index = 0;
 
@@ -165,6 +165,7 @@ bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* Crossi
 			Vdmax_index = i;
 		}
 	*Vd = Vdmax;
+	*VdIndex = Vdmax_index;
 
 	if (Vdmax > OSV_PEAK_DETECT_V && Vdmax_index != 0)
 	{
@@ -177,6 +178,45 @@ bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* Crossi
 	}
 	
 	return false;
+}
+//----------------------------------------------
+
+bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t VdIndex, uint16_t SetVd, uint16_t FlatTopUs, float FlatTopHyst)
+{
+	int32_t i;
+	float Vd = SetVd * FlatTopHyst;
+
+	if (Buffer == NULL || BufferLength == 0 || VdIndex >= BufferLength)
+		return false;
+
+	// Find rising edge of the FlatTop threshold, searching back from Vd peak
+	int32_t crossIndex = -1;
+	for (i = (int32_t)VdIndex - 1; i >= 0; --i)
+	{
+		if (Buffer[i] < Vd && Buffer[i + 1] >= Vd)
+		{
+			crossIndex = i + 1;
+			break;
+		}
+	}
+
+	if (crossIndex < 0)
+		return false;
+
+	// Convert FlatTop duration to samples and require a full window
+	uint32_t flatTopSamples = (uint32_t)((float)FlatTopUs / SAMPLING_TIME_FRACTION);
+	if ((BufferLength - (uint32_t)crossIndex) < flatTopSamples)
+		return false;
+
+	// DUT is open if voltage stays at or above the threshold over the window
+	int32_t flatTopEnd = crossIndex + (int32_t)flatTopSamples;
+	for (i = crossIndex; i < flatTopEnd; ++i)
+	{
+		if (Buffer[i] < Vd)
+			return false;
+	}
+
+	return true;
 }
 //----------------------------------------------
 

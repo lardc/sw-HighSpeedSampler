@@ -111,7 +111,7 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 // ----------------------------------------
 
 PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr,
-	float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* trs, float* trf, float* Vr_min)
+	float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* trs, float* trf, float* Vr_min, uint16_t SetVd, bool* DutTrig)
 {
 	char message[256];
 
@@ -297,15 +297,23 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					// Calculate voltage zero crossing
-					uint32_t Index_0V = 0;
+					uint32_t Index_0V = 0, Index_Vd = 0;
 					if (UseVoltage && !SCOPE_CURRENT_ONLY)
 					{
-						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd);
+						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd, &Index_Vd);
+
+						sprintf_s(message, 256, "SetVd: %u", SetVd);
+						InfoPrint(IP_Info, message);
+
 						sprintf_s(message, 256, "Vd: %.1f", *Vd);
 						InfoPrint(IP_Info, message);
 
 						if (!ZeroCrossingCalcOK)
 							throw PROBLEM_CALC_VZ;
+
+						if (DutTrig)
+							*DutTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd,
+								DataTable[REG_FLATTOP_DUT_US], (float)DataTable[REG_FLATTOP_DUT_HYST] / 1000.0f);
 
 						sprintf_s(message, 256, "Index V0: %d", Index_0V);
 						InfoPrint(IP_Info, message);

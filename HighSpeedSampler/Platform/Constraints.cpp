@@ -70,8 +70,8 @@ const TableItemConstraint NVConstraint[DATA_TABLE_NV_SIZE] =
 										   {0, 0, 0},																// 47
 										   {0, 0, 0},																// 48
 										   {0, 0, 0},																// 49
-										   {0, 0, 0},																// 50
-										   {0, 0, 0},																// 51
+										   {0, UINT16_MAX, FLATTOP_DUT_US_DEF},										// 50
+										   {0, 1000, FLATTOP_DUT_HYST_DEF},											// 51
 										   {0, 0, 0},																// 52
 										   {0, 0, 0},																// 53
 										   {0, 0, 0},																// 54

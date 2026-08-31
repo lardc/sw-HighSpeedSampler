@@ -84,6 +84,9 @@
 #define REG_TRR_P1					45	// Trr P1
 #define REG_TRR_P0					46	// Trr P0
 //
+#define REG_FLATTOP_DUT_US			50	// Duration of FlatTop for DUT open check (in us)
+#define REG_FLATTOP_DUT_HYST		51	// FlatTop trigger threshold (x1000 of SetVd)
+//
 #define REG_SP__1					127
 //
 // ----------------------------------------
@@ -126,6 +129,7 @@
 #define REG_RESULT_TRS				210 // Time trs (in us x100)
 #define REG_RESULT_TRF				211 // Time trf (in us x100)
 #define REG_RESULT_TIME_0_90		212	// Time 0 - 90 Irr (in us x100) 
+#define REG_RESULT_DUT_TRIG			213	// DUT trig
 #define REG_RESULT_VR_MIN			214	// Vr_min (in V) 
 //
 #define REG_EP_ELEMENTARY_FRACT		220	// Elementary fraction length in ns
