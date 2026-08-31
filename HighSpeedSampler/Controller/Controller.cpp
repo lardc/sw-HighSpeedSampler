@@ -105,9 +105,16 @@ void CONTROL_AddRS232Timer()
 }
 //----------------------------------------------
 
-void CONTROL_DeleteRS232Timer()
-{
-	DeleteTimerQueueTimer(NULL, hTimer, NULL);
+void CONTROL_DeleteRS232Timer()  
+{  
+   if (!DeleteTimerQueueTimer(NULL, hTimer, NULL))  
+   {  
+       // Handle the error if DeleteTimerQueueTimer fails  
+       DWORD error = GetLastError();  
+       char message[256];  
+       sprintf_s(message, 256, "Failed to delete timer queue timer. Error: %lu", error);  
+       InfoPrint(IP_Err, message);  
+   }  
 }
 //----------------------------------------------
 

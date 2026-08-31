@@ -104,7 +104,7 @@ float CALC_Qrr(float* Buffer, uint32_t BufferLength, uint32_t t0, uint32_t trr, 
 
 bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, float* dIdt)
 {
-	uint32_t i, Id_half, Ir_half;
+	uint32_t i, Id_half = 0, Ir_half = t0;
 	float Id;
 
 	// Find Id_max
