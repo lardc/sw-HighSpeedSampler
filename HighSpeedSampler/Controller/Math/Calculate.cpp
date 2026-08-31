@@ -180,15 +180,19 @@ bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* Crossi
 }
 //----------------------------------------------
 
-float CALC_Vr_min(float* Buffer, uint32_t CrossingIndI, uint32_t CrossingIndV)
+bool CALC_Vr_min(float* Buffer, uint32_t CrossingIndI, uint32_t CrossingIndV, float* Vr_min)
 {
 	uint32_t i;
 	float VoltMin;
+
+	if (CrossingIndI >= CrossingIndV)
+		return false;
+
 	VoltMin = Buffer[CrossingIndI];
-	// Find minimal voltage
 	for (i = CrossingIndI; i < CrossingIndV; ++i)
 		if (Buffer[i] < VoltMin) VoltMin = Buffer[i];
 
-	return VoltMin;
+	*Vr_min = VoltMin;
+	return true;
 }
 //----------------------------------------------

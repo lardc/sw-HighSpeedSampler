@@ -315,7 +315,8 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					// Calculate reverse voltage amplitude
 					if (UseVoltage && !SCOPE_CURRENT_ONLY)
 					{
-						*Vr_min = CALC_Vr_min(MEMBUF_fScopeVFiltered, Index_0, Index_0V);
+						if (!CALC_Vr_min(MEMBUF_fScopeVFiltered, Index_0, Index_0V, Vr_min))
+							throw PROBLEM_CALC_VR_MIN;
 
 						sprintf_s(message, 256, "Vr_min: %.1f", *Vr_min);
 						InfoPrint(IP_Info, message);
