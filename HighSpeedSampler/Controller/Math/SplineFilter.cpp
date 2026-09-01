@@ -7,8 +7,8 @@
 
 // Definitions
 //
-#define SF_FILTER_POINTS		5
-#define SF_FILTER_FACTOR		0.5
+#define SF_FILTER_POINTS		4
+#define SF_FILTER_FACTOR		0.2
 
 // Variables
 //

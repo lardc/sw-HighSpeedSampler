@@ -89,7 +89,7 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 	
 	// Voltage parameters
 	float Vdiv = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
-	float Vmax = (float)fabs(SAMPLING_QRR_VR) * 2;
+	float Vmax = fabsf(SAMPLING_QRR_VR) * 2;
 	if (DataTable[REG_MEASURE_MODE] == MODE_QRR_TQ && DataTable[REG_VOLTAGE_AMPL] > Vmax)
 		Vmax = DataTable[REG_VOLTAGE_AMPL];
 	VoltageSet = Vdiv * Vmax;
@@ -110,11 +110,12 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 }
 // ----------------------------------------
 
-PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr, float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V)
+PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr,
+	float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09,
+	float* trs, float* trf, float* Vr_min, uint16_t SetVd, bool* DutTrig, uint32_t* IndexIrr)
 {
 	char message[256];
 
-	uint32_t i, Index_0, Index_irr, Index_trr, Index_025, Index_09, Index_0V;
 	PICO_STATUS status;
 	bool InvertCurrent = (DataTable[REG_INVERT_CURRENT] == 1);
 	float Actual_dIdt = 0;
@@ -122,47 +123,76 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 	SCOPE_ReadFullCounter = 0;
 	*CalcProblem = PROBLEM_NONE;
 
+	uint32_t NSamples = LOGIC_GetSamplingSamples();
+
 	// Get scope data
-	if ((status = SAMPLER_ConnectOutputBuffers(MEMBUF_ScopeI, SAMPLING_SAMPLES, MEMBUF_ScopeV, SAMPLING_SAMPLES)) == PICO_OK)
+	if ((status = SAMPLER_ConnectOutputBuffers(MEMBUF_ScopeI, NSamples, MEMBUF_ScopeV, NSamples)) == PICO_OK)
 	{
-		MEMBUF_Scope_Counter = SAMPLING_SAMPLES;
+		MEMBUF_Scope_Counter = NSamples;
+
+		sprintf_s(message, 256, "Number of samplies: %d; sampling time: %.3f", NSamples, NSamples * SAMPLING_TIME_FRACTION);
+		InfoPrint(IP_Info, message);
+
 		if ((status = SAMPLER_GetValues(&MEMBUF_Scope_Counter)) == PICO_OK)
 		{
 			if ((status = SAMPLER_Stop()) == PICO_OK)
 			{
 				// Convert to current
-				float Kfine = (float)DataTable[REG_I_FINE_N] / DataTable[REG_I_FINE_D];
-				float Offset = (float)((int16_t)DataTable[REG_I_FINE_OFFSET]) / 10;
+				float P2_I = 0.0f, P1_I = 1.0f, P0_I = 0.0f;
+				PS5000A_RANGE IRange = SAMPLER_GetSavedIRange();
+				if (IRange >= PS5000A_100MV && IRange <= PS5000A_5V)
+				{
+					uint16_t DToffset = REG_I_3_P2 + (IRange - PS5000A_100MV) * 3;
+					P2_I = (float)(int16_t)DataTable[DToffset] / 1e6f;
+					P1_I = (float)DataTable[DToffset + 1] / 1e3f;
+					P0_I = (float)(int16_t)DataTable[DToffset + 2];
+				}
 
 				// Diagnostic output
-				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; Kfine: %.3f; Offset: %.1f", ShuntResCache, SAMPLER_GetSavedIRange(), SAMPLER_GetIRangeCoeff(), Kfine, Offset);
+				sprintf_s(message, 256, "Shunt, mOhm: %.3f; Range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f",
+					ShuntResCache, IRange, SAMPLER_GetIRangeCoeff(), P2_I, P1_I, P0_I);
 				InfoPrint(IP_Info, message);
 
 				if (InvertCurrent)
 				{
-					for (i = 0; i < MEMBUF_Scope_Counter; ++i)
+					for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
 						MEMBUF_ScopeI[i] = -MEMBUF_ScopeI[i];
 				}
 				
-				for (i = 0; i < MEMBUF_Scope_Counter; ++i)
-					MEMBUF_fScopeI[i] = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i] * Kfine) / (INT16_MAX * ShuntResCache * 0.001f) + Offset;
+				for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
+				{
+					float ScopeI = (SAMPLER_GetIRangeCoeff() * MEMBUF_ScopeI[i]) / (INT16_MAX * ShuntResCache * 0.001f);
+					MEMBUF_fScopeI[i] = ScopeI * ScopeI * P2_I + ScopeI * P1_I + P0_I;
+				}
 
 				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 				SPLINE_Apply(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 
 				// Convert to voltage
 				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
-				Kfine = (float)DataTable[REG_V_FINE_N] / DataTable[REG_V_FINE_D];
-				Offset = (float)((int16_t)DataTable[REG_V_FINE_OFFSET]) / 10;
+
+				float P2_U = 0.0f, P1_U = 1.0f, P0_U = 0.0f;
+				PS5000A_RANGE VRange = SAMPLER_GetSavedVRange();
+				if (VRange >= PS5000A_500MV && VRange <= PS5000A_10V)
+				{
+					uint16_t DToffset = REG_U_5_P2 + (VRange - PS5000A_500MV) * 3;
+					P2_U = (float)(int16_t)DataTable[DToffset] / 1e6f;
+					P1_U = (float)DataTable[DToffset + 1] / 1e3f;
+					P0_U = (float)(int16_t)DataTable[DToffset + 2];
+				}
 
 				// Diagnostic output
-				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; Kfine: %.3f; Offset: %.1f", SAMPLER_GetSavedVRange(), SAMPLER_GetVRangeCoeff(), Kfine, Offset);
+				sprintf_s(message, 256, "Voltage range: %d; Range-K: %.2f; P2: %.6f; P1: %.3f; P0: %.1f",
+					VRange, SAMPLER_GetVRangeCoeff(), P2_U, P1_U, P0_U);
 				InfoPrint(IP_Info, message);
 
 				if (!SCOPE_CURRENT_ONLY)
 				{
-					for (i = 0; i < MEMBUF_Scope_Counter; ++i)
-						MEMBUF_fScopeV[i] = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX) + Offset;
+					for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
+					{
+						float ScopeU = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX);
+						MEMBUF_fScopeV[i] = ScopeU * ScopeU * P2_U + ScopeU * P1_U + P0_U;
+					}
 
 					FIR_Apply(MEMBUF_fScopeV, MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
 					SPLINE_Apply(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
@@ -175,44 +205,91 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					// Calculate Index0 and Irr parameters
-					if (!CALC_IrrAndZeroCrossingIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, &Index_0, &Index_irr))
+					uint32_t Index_0 = 0, Index_Irr = 0;
+					if (!CALC_IrrAndZeroCrossingIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, &Index_0, &Index_Irr))
 						throw PROBLEM_CALC_IRR;
 
 					if (Index0) *Index0 = Index_0;
-					if (Irr) *Irr = (float)fabs(MEMBUF_fScopeIFiltered[Index_irr]);
+					if (IndexIrr) *IndexIrr = Index_Irr;
+					if (Irr) *Irr = fabsf(MEMBUF_fScopeIFiltered[Index_Irr]);
 
-					sprintf_s(message, 256, "Index 0: %d; Index Irr: %d", Index_0, Index_irr);
+					sprintf_s(message, 256, "Index 0: %d; Index Irr: %d", Index_0, Index_Irr);
 					InfoPrint(IP_Info, message);
 
 					// Calculate Irr pivot points
-					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_irr, UseTrr050Method ? 0.5f : 0.25f, &Index_025))
+					uint32_t Index_025 = 0;
+					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_Irr,
+						UseTrr050Method ? 0.5f : 0.25f, &Index_025))
 						throw PROBLEM_CALC_IRR_025;
 
-					sprintf_s(message, 256, "Index Irr_low: %d", Index_025);
+					sprintf_s(message, 256, "Index Irr_low (0.25): %d", Index_025);
 					InfoPrint(IP_Info, message);
 
-					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_irr, 0.9f, &Index_09))
+					uint32_t Index_09 = 0;
+					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_Irr, 0.9f, &Index_09))
 						throw PROBLEM_CALC_IRR_090;
 
-					sprintf_s(message, 256, "Index Irr_high: %d", Index_09);
+					sprintf_s(message, 256, "Index Irr_high (0.9): %d", Index_09);
 					InfoPrint(IP_Info, message);
 
-					// Calculate trr and Qrr
-					Index_trr = CALC_trrIndex(MEMBUF_fScopeIFiltered[Index_025], MEMBUF_fScopeIFiltered[Index_09], Index_025, Index_09);
+					// Calculate trr and fixing sampling time
+					uint32_t Index_trr = CALC_trrIndex(MEMBUF_fScopeIFiltered[Index_025], MEMBUF_fScopeIFiltered[Index_09],
+						Index_025, Index_09);
 
-					if (trr) *trr = SAMPLING_TIME_FRACTION * ((Index_trr > Index_0) ? (Index_trr - Index_0) : 0);
-					if (Qrr) *Qrr = (float)fabs(CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, SAMPLING_TIME_FRACTION));
+					uint32_t trr_ticks = (Index_trr > Index_0) ? Index_trr - Index_0 : 0;
+					if (trr_ticks == 0)
+						throw PROBLEM_CALC_TRR;
 
-					sprintf_s(message, 256, "Index trr: %d", Index_trr);
+					float trr_P2 = (float)(int16_t)DataTable[REG_TRR_P2] / 1e6f;
+					float trr_P1 = (float)DataTable[REG_TRR_P1] / 1e3f;
+					float trr_P0 = (float)(int16_t)DataTable[REG_TRR_P0];
+					sprintf_s(message, 256, "trr fine tune P2: %e, P1: %e, P0: %e", trr_P2, trr_P1, trr_P0);
 					InfoPrint(IP_Info, message);
 
-					// Calculate actual dIdt
-					if (!CALC_dIdt(MEMBUF_fScopeIFiltered, Index_0, Index_irr, SAMPLING_TIME_FRACTION, &Actual_dIdt))
+					float trr_raw = SAMPLING_TIME_FRACTION * trr_ticks;
+					float trr_tuned = trr_raw * trr_raw * trr_P2 + trr_raw * trr_P1 + trr_P0;
+					if (trr_tuned <= 0.0f)
+						throw PROBLEM_CALC_TRR;
+
+					if (trr) *trr = trr_tuned;
+
+					float TunedSamplingTimeFraction = trr_tuned / trr_ticks;
+
+					sprintf_s(message, 256, "Index trr: %d, trr ticks: %d, trr_raw: %.3f, trr_tuned: %.3f, tuned time fraction: %.6f",
+						Index_trr, trr_ticks, trr_raw, trr_tuned, TunedSamplingTimeFraction);
+					InfoPrint(IP_Info, message);
+
+					// Calculate time from zero crossing to 0.9 irr from rising side
+					if (Time09)
+					{
+						*Time09 = TunedSamplingTimeFraction * (Index_09 - Index_0);
+						sprintf_s(message, 256, "Time 0.90: %.3f", *Time09);
+						InfoPrint(IP_Info, message);
+					}
+
+					// Calculate trs, trf
+					float _trs = TunedSamplingTimeFraction * (Index_Irr - Index_0);
+					float _trf = trr_tuned - _trs;
+					sprintf_s(message, 256, "trs: %.3f, trf: %.3f", _trs, _trf);
+					InfoPrint(IP_Info, message);
+					if (trs) *trs = _trs;
+					if (trf) *trf = _trf;
+				
+					// Calculate Qrr
+					float _Qrr = CALC_Qrr(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_0, Index_trr, TunedSamplingTimeFraction);
+					if (_Qrr <= 0.0f)
+						throw PROBLEM_CALC_QRR;
+					sprintf_s(message, 256, "Qrr: %.2f", _Qrr);
+					InfoPrint(IP_Info, message);
+					if (Qrr) *Qrr = _Qrr;
+
+					// Calculate actual dIdt (unfixed sampling time is used)
+					if (!CALC_dIdt(MEMBUF_fScopeIFiltered, Index_0, Index_Irr, SAMPLING_TIME_FRACTION, &Actual_dIdt))
 						throw PROBLEM_CALC_DIDT;
 
 					if (dIdt) *dIdt = Actual_dIdt;
 
-					sprintf_s(message, 256, "Actual dIdt: %.1f", Actual_dIdt);
+					sprintf_s(message, 256, "Actual dIdt: %.2f", Actual_dIdt);
 					InfoPrint(IP_Info, message);
 
 					// Calculate Id
@@ -222,21 +299,38 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					// Calculate voltage zero crossing
+					uint32_t Index_0V = 0, Index_Vd = 0;
 					if (UseVoltage && !SCOPE_CURRENT_ONLY)
 					{
-						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd);
+						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd, &Index_Vd);
+
+						sprintf_s(message, 256, "SetVd: %u", SetVd);
+						InfoPrint(IP_Info, message);
+
 						sprintf_s(message, 256, "Vd: %.1f", *Vd);
 						InfoPrint(IP_Info, message);
 
 						if (!ZeroCrossingCalcOK)
 							throw PROBLEM_CALC_VZ;
 
+						if (DutTrig)
+							*DutTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd,
+								DataTable[REG_FLATTOP_DUT_US], (float)DataTable[REG_FLATTOP_DUT_HYST] / 1000.0f);
+
 						sprintf_s(message, 256, "Index V0: %d", Index_0V);
 						InfoPrint(IP_Info, message);
 					}
-					else
-						Index_0V = 0;
 					if (Index0V) *Index0V = Index_0V;
+
+					// Calculate reverse voltage amplitude
+					if (UseVoltage && !SCOPE_CURRENT_ONLY)
+					{
+						if (!CALC_Vr_min(MEMBUF_fScopeVFiltered, Index_0, Index_0V, Vr_min))
+							throw PROBLEM_CALC_VR_MIN;
+
+						sprintf_s(message, 256, "Vr_min: %.1f", *Vr_min);
+						InfoPrint(IP_Info, message);
+					}
 				}
 				catch(int problem)
 				{
@@ -253,42 +347,71 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 // ----------------------------------------
 
 uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
-	uint32_t Index0, uint32_t MulFactor, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps, float OutMulFactor)
+	uint32_t Index0, uint32_t MulFactor, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps, float OutMulFactor,
+	bool ModeQrr, uint32_t IndexIrr)
 {
-	uint16_t Counter, dsRatio, i = 0;
-	uint32_t TrimmedDataCounter;
+	if (MEMBUF_Scope_Counter == 0)
+		return 0;
 
-	// Trim data in case of successful calculations
+	uint32_t startIndex = 0, endIndex = MEMBUF_Scope_Counter - 1;
+
 	if (ForceSectorRead > 0)
 	{
-		TrimmedDataCounter = (ForceSectorRead < MEMBUF_Scope_Counter) ? ForceSectorRead : MEMBUF_Scope_Counter;
+		// Diagnostic override: take a forced-length sector from the start of the capture
+		endIndex = (ForceSectorRead < endIndex) ? ForceSectorRead : endIndex;
+	}
+	else if (ModeQrr && CalcOK && Index0 > 0 && IndexIrr > 0 && DataTable[REG_CURRENT_THRESHOLD] > 0)
+	{
+		// QRR only: window from zero-crossing until |I| recovers to the threshold % of Irr
+		float CurrentThreshold = MEMBUF_fScopeIFiltered[IndexIrr] * DataTable[REG_CURRENT_THRESHOLD] / 100.0f;
+		
+		uint32_t NewEndIndex = IndexIrr;
+		for (; NewEndIndex < MEMBUF_Scope_Counter; NewEndIndex++)
+		{
+			if (MEMBUF_fScopeIFiltered[NewEndIndex] > CurrentThreshold)
+				break;
+		}
+
+		startIndex = Index0;
+		endIndex = (MEMBUF_Scope_Counter == NewEndIndex) ? (MEMBUF_Scope_Counter - 1) : NewEndIndex;
 	}
 	else
 	{
-		// 4 x (fall time from Imax to zero)
-		TrimmedDataCounter = ((MulFactor * Index0) < MEMBUF_Scope_Counter && CalcOK && Index0 > 0) ? (MulFactor * Index0) : MEMBUF_Scope_Counter;
+		// Default trim: MulFactor * Index0, or the full buffer
+		endIndex = ((MulFactor * Index0) < endIndex && CalcOK && Index0 > 0) ? (MulFactor * Index0) : endIndex;
 	}
 
-	// Downsample ratio
-	dsRatio = TrimmedDataCounter / BufferSize + 1;
-	Counter = TrimmedDataCounter / dsRatio;
+	if (endIndex <= startIndex || BufferSize == 0)
+	{
+		if (SampleTimeSteps)
+			*SampleTimeSteps = 1;
+		return 0;
+	}
 
-	for (i = 0; i < Counter; ++i)
-		Buffer[i] = (uint16_t)((int16_t)(SrcBuffer[i * dsRatio] * OutMulFactor));
+	// Fit the window into the endpoint; one EP step equals dsRatio scope samples
+	uint32_t SelectedPointsCounter = endIndex - startIndex + 1, dsRatio = 1;
+	if (SelectedPointsCounter > BufferSize)
+		dsRatio = SelectedPointsCounter / BufferSize + 1;
+
+	uint32_t srcIndex = startIndex;
+	uint16_t outIndex = 0;
+	for (; (outIndex < BufferSize) && (srcIndex <= endIndex) && (srcIndex < MEMBUF_Scope_Counter); srcIndex += dsRatio, outIndex++)
+		Buffer[outIndex] = (uint16_t)((int16_t)(SrcBuffer[srcIndex] * OutMulFactor));
 
 	if (SampleTimeSteps)
 		*SampleTimeSteps = dsRatio;
 
-	return i;
+	return outIndex;
 }
 // ----------------------------------------
 
 uint16_t LOGIC_GetIData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
-	bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps)
+	bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps,
+	uint32_t IndexIrr)
 {
 	return LOGIC_GetXData(MEMBUF_fScopeIFiltered, Buffer, BufferSize, CalcOK,
 		ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V,
-		ForceSectorRead, SampleTimeSteps, EP_CURRENT_MUL);
+		ForceSectorRead, SampleTimeSteps, EP_CURRENT_MUL, ModeQrr, IndexIrr);
 }
 // ----------------------------------------
 
@@ -297,7 +420,7 @@ uint16_t LOGIC_GetVData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
 {
 	return LOGIC_GetXData(MEMBUF_fScopeVFiltered, Buffer, BufferSize, CalcOK,
 		ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V,
-		ForceSectorRead, SampleTimeSteps, EP_VOLTAGE_MUL);
+		ForceSectorRead, SampleTimeSteps, EP_VOLTAGE_MUL, ModeQrr, 0);
 }
 // ----------------------------------------
 
@@ -392,5 +515,15 @@ void LOGIC_VoltageToFile()
 {
 	LOGIC_ShortBufferToFile(MEMBUF_ScopeV, MEMBUF_Scope_Counter, "voltage_raw.csv");
 	LOGIC_FloatBufferToFile(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, "voltage.csv");
+}
+// ----------------------------------------
+
+uint32_t LOGIC_GetSamplingSamples()
+{
+	float t_fall = (DataTable[REG_DC_FALL_TIME] > 0) ? (float)DataTable[REG_DC_FALL_TIME] : 0.0f;
+	uint32_t samples = (uint32_t)((SAMPLING_T_CONST + t_fall) / SAMPLING_TIME_FRACTION);
+	if (samples > (uint32_t)SAMPLING_SAMPLES)
+		samples = (uint32_t)SAMPLING_SAMPLES;
+	return samples;
 }
 // ----------------------------------------

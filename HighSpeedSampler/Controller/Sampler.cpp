@@ -2,16 +2,19 @@
 //
 #include "stdafx.h"
 #include "Sampler.h"
+#include "Info.h"
 
 // Includes
 //
 #include "Global.h"
+#include "Logic.h"
 #include <math.h>
 
 // Variables
 //
 static int16_t VHandler, IHandler;
 static bool SamplingVDone = false, SamplingIDone = false;
+static bool SamplingVLogged = false, SamplingILogged = false;
 static PS5000A_RANGE SavedVRange = SAMPLING_DEFAULT_RANGE, SavedIRange = SAMPLING_DEFAULT_RANGE;
 
 // Functions
@@ -46,9 +49,6 @@ PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler, PICO_STATU
 }
 //----------------------------------------------
 
-#pragma warning( push )
-#pragma warning( disable : 6286 )
-
 PICO_STATUS SAMPLER_Open(const char *ScopeSerialVoltage, const char *ScopeSerialCurrent, PICO_STATUS *VOpenStatus, PICO_STATUS *IOpenStatus)
 {
 	PICO_STATUS ret_val = PICO_OK;
@@ -73,9 +73,10 @@ PICO_STATUS SAMPLER_ConfigureSamplingRate()
 	if (DIAG_EMULATE_SCOPES)
 		return PICO_OK;
 
+	uint32_t samples = LOGIC_GetSamplingSamples();
 	PICO_STATUS ret_val = PICO_OK;
-	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aGetTimebase(VHandler, SAMPLING_TIME_BASE, SAMPLING_SAMPLES, NULL, NULL, 0)) == PICO_OK)
-		ret_val = ps5000aGetTimebase(IHandler, SAMPLING_TIME_BASE, SAMPLING_SAMPLES, NULL, NULL, 0);
+	if (SCOPE_CURRENT_ONLY || (ret_val = ps5000aGetTimebase(VHandler, SAMPLING_TIME_BASE, samples, NULL, NULL, 0)) == PICO_OK)
+		ret_val = ps5000aGetTimebase(IHandler, SAMPLING_TIME_BASE, samples, NULL, NULL, 0);
 
 	return ret_val;
 }
@@ -246,18 +247,21 @@ PICO_STATUS SAMPLER_ActivateSampling()
 	if (DIAG_EMULATE_SCOPES)
 	{
 		SamplingVDone = SamplingIDone = true;
+		SamplingVLogged = SamplingILogged = false;
 		return PICO_OK;
 	}
 
 	PICO_STATUS ret_val = PICO_OK;
 	SamplingVDone = SamplingIDone = false;
+	SamplingVLogged = SamplingILogged = false;
 
 	if (SCOPE_CURRENT_ONLY)
 		SamplingVDone = true;
 
+	uint32_t samples = LOGIC_GetSamplingSamples();
 	if (SCOPE_CURRENT_ONLY ||
-		(ret_val = ps5000aRunBlock(VHandler, 0, SAMPLING_SAMPLES, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL)) == PICO_OK)
-		ret_val = ps5000aRunBlock(IHandler, 0, SAMPLING_SAMPLES, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL);
+		(ret_val = ps5000aRunBlock(VHandler, 0, samples, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL)) == PICO_OK)
+			ret_val = ps5000aRunBlock(IHandler, 0, samples, SAMPLING_TIME_BASE, NULL, 0, SAMPLER_CallBack, NULL);
 
 	return ret_val;
 }
@@ -265,6 +269,19 @@ PICO_STATUS SAMPLER_ActivateSampling()
 
 bool SAMPLING_Finished()
 {
+	if (SamplingVDone)
+	{
+		if (!SamplingVLogged)
+		{
+			InfoPrint(IP_Info, "V Sampling Finish");
+			SamplingVLogged = true;
+		}
+		if (SamplingIDone && !SamplingILogged)
+		{
+			InfoPrint(IP_Info, "I Sampling Finish");
+			SamplingILogged = true;
+		}
+	}
 	return (SamplingVDone && SamplingIDone);
 }
 //----------------------------------------------
@@ -311,5 +328,3 @@ PICO_STATUS SAMPLER_Stop()
 	return ret_val;
 }
 //----------------------------------------------
-
-#pragma warning( pop )

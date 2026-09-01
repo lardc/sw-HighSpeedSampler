@@ -36,6 +36,57 @@
 #define REG_VOLTAGE_DIV_N			9	// Voltage divider coefficient (N)
 #define REG_VOLTAGE_DIV_D			10	// Voltage divider coefficient (D)
 //
+#define REG_U_5_P2					11	// Коэффициент тонкой подстройки Р2
+#define REG_U_5_P1					12	// Коэффициент тонкой подстройки Р2
+#define REG_U_5_P0					13	// Смещение тонкой подстройки Р0
+
+#define REG_U_6_P2					14	// Коэффициент тонкой подстройки Р2
+#define REG_U_6_P1					15	// Коэффициент тонкой подстройки Р2
+#define REG_U_6_P0					16	// Смещение тонкой подстройки Р0
+
+#define REG_U_7_P2					17	// Коэффициент тонкой подстройки Р2
+#define REG_U_7_P1					18	// Коэффициент тонкой подстройки Р2
+#define REG_U_7_P0					19	// Смещение тонкой подстройки Р0
+
+#define REG_U_8_P2					20	// Коэффициент тонкой подстройки Р2
+#define REG_U_8_P1					21	// Коэффициент тонкой подстройки Р2
+#define REG_U_8_P0					22	// Смещение тонкой подстройки Р0
+
+#define REG_U_9_P2					23	// Коэффициент тонкой подстройки Р2
+#define REG_U_9_P1					24	// Коэффициент тонкой подстройки Р2
+#define REG_U_9_P0					25	// Смещение тонкой подстройки Р0
+//
+#define REG_I_3_P2					26	// Коэффициент тонкой подстройки Р2
+#define REG_I_3_P1					27	// Коэффициент тонкой подстройки Р2
+#define REG_I_3_P0					28	// Смещение тонкой подстройки Р0
+
+#define REG_I_4_P2					29	// Коэффициент тонкой подстройки Р2
+#define REG_I_4_P1					30	// Коэффициент тонкой подстройки Р2
+#define REG_I_4_P0					31	// Смещение тонкой подстройки Р0
+
+#define REG_I_5_P2					32	// Коэффициент тонкой подстройки Р2
+#define REG_I_5_P1					33	// Коэффициент тонкой подстройки Р2
+#define REG_I_5_P0					34	// Смещение тонкой подстройки Р0
+
+#define REG_I_6_P2					35	// Коэффициент тонкой подстройки Р2
+#define REG_I_6_P1					36	// Коэффициент тонкой подстройки Р2
+#define REG_I_6_P0					37	// Смещение тонкой подстройки Р0
+
+#define REG_I_7_P2					38	// Коэффициент тонкой подстройки Р2
+#define REG_I_7_P1					39	// Коэффициент тонкой подстройки Р2
+#define REG_I_7_P0					40	// Смещение тонкой подстройки Р0
+
+#define REG_I_8_P2					41	// Коэффициент тонкой подстройки Р2
+#define REG_I_8_P1					42	// Коэффициент тонкой подстройки Р2
+#define REG_I_8_P0					43	// Смещение тонкой подстройки Р0
+
+#define REG_TRR_P2					44	// Trr P2
+#define REG_TRR_P1					45	// Trr P1
+#define REG_TRR_P0					46	// Trr P0
+//
+#define REG_FLATTOP_DUT_US			50	// Duration of FlatTop for DUT open check (in us)
+#define REG_FLATTOP_DUT_HYST		51	// FlatTop trigger threshold (x1000 of SetVd)
+//
 #define REG_SP__1					127
 //
 // ----------------------------------------
@@ -44,6 +95,8 @@
 #define REG_MEASURE_MODE			129	// Select sampling mode (Qrr or Qrr-tq)
 #define REG_TR_050_METHOD			130	// Use 50% level of Irr to detect tr time
 #define REG_VOLTAGE_AMPL			131	// Voltage amplitude (in V)
+#define REG_DC_FALL_TIME			132 // Current fall rate (in us)
+#define REG_CURRENT_THRESHOLD		133	// Last graph point threshold (% of Irr)
 //
 #define REG_DIAG_FORCE_SECTOR_READ	150	// Force read of defined time sector from scopes (in us)
 #define REG_DIAG_FULL_ARR_SCALE		151	// Scale factor for full-array read
@@ -65,19 +118,35 @@
 #define REG_OP_RESULT				197	// Operation result
 //
 #define REG_DF_REASON_EX			200	// Fault or disable extended reason
-#define REG_RESULT_IRR				201	// Reverse recovery current amplitude (in A)
-#define REG_RESULT_TRR				202	// Reverse recovery time (in us x10)
-#define REG_RESULT_QRR				203	// Reverse recovery charge (in uQ)
+#define REG_RESULT_IRR				201	// Reverse recovery current amplitude (in A x10)
+#define REG_RESULT_TRR				202	// Reverse recovery time (in us x100)
+#define REG_RESULT_QRR				203	// Reverse recovery charge (in uQ x10)
 #define REG_RESULT_ZERO				204	// Zero-cross time (in us x10)
 #define REG_RESULT_ZERO_V			205	// Zero-cross time for on-state voltage (in us x10)
-#define REG_RESULT_DIDT				206	// Actual value of dIdt (in A/us x10)
+#define REG_RESULT_DIDT				206	// Actual value of dIdt (in A/us x100)
 #define REG_RESULT_ID				207	// Direct current amplitude (in A)
 #define REG_RESULT_VD				208	// Direct voltage amplitude (in V)
+#define REG_RESULT_QRR_B32			209	// Reverse recovery charge (in uQ x10) 32bit part
+#define REG_RESULT_TRS				210 // Time trs (in us x100)
+#define REG_RESULT_TRF				211 // Time trf (in us x100)
+#define REG_RESULT_TIME_0_90		212	// Time 0 - 90 Irr (in us x100) 
+#define REG_RESULT_DUT_TRIG			213	// DUT trig
+#define REG_RESULT_VR_MIN			214	// Vr_min (in V) 
 //
 #define REG_EP_ELEMENTARY_FRACT		220	// Elementary fraction length in ns
 #define REG_EP_STEP_FRACTION_CNT	221	// Number of elementary fractions in the EP single step
 //
 #define REG_SP__3					255
+//
+// -----------------------------------------------
+//
+#define REG_FWINFO_SLAVE_NID		256	// Device CAN slave node ID
+#define REG_FWINFO_MASTER_NID		257	// Device CAN master node ID (if presented)
+// 258 - 259
+#define REG_FWINFO_STR_LEN			260	// Length of the information string record
+#define REG_FWINFO_STR_BEGIN		261	// Beginning of the information string record
+
+// -----------------------------------------------
 
 
 // ENDPOINTS
@@ -103,6 +172,9 @@
 #define PROBLEM_CALC_IRR_090		3	// Problem calculating 90% fraction Irr
 #define PROBLEM_CALC_VZ				4	// Problem calculating V zero crossing
 #define PROBLEM_CALC_DIDT			5	// Problem calculating actual dIdt
+#define PROBLEM_CALC_TRR			6	// Problem calculating trr
+#define PROBLEM_CALC_QRR			7	// Problem calculating Qrr
+#define PROBLEM_CALC_VR_MIN			8	// Problem calculating Vr_min
 
 // FAULT & DISABLE
 //

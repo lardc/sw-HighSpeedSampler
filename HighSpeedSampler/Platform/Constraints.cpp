@@ -31,47 +31,47 @@ const TableItemConstraint NVConstraint[DATA_TABLE_NV_SIZE] =
 										   {0, UINT16_MAX, 0},														// 8
 										   {1, UINT16_MAX, X_D_DEF2},												// 9
 										   {1, X_D_DEF3, X_D_DEF2},													// 10
-										   {0, 0, 0},																// 11
-										   {0, 0, 0},																// 12
-										   {0, 0, 0},																// 13
-										   {0, 0, 0},																// 14
-										   {0, 0, 0},																// 15
-										   {0, 0, 0},																// 16
-										   {0, 0, 0},																// 17
-										   {0, 0, 0},																// 18
-										   {0, 0, 0},																// 19
-										   {0, 0, 0},																// 20
-										   {0, 0, 0},																// 21
-										   {0, 0, 0},																// 22
-										   {0, 0, 0},																// 23
-										   {0, 0, 0},																// 24
-										   {0, 0, 0},																// 25
-										   {0, 0, 0},																// 26
-										   {0, 0, 0},																// 27
-										   {0, 0, 0},																// 28
-										   {0, 0, 0},																// 29
-										   {0, 0, 0},																// 30
-										   {0, 0, 0},																// 31
-										   {0, 0, 0},																// 32
-										   {0, 0, 0},																// 33
-										   {0, 0, 0},																// 34
-										   {0, 0, 0},																// 35
-										   {0, 0, 0},																// 36
-										   {0, 0, 0},																// 37
-										   {0, 0, 0},																// 38
-										   {0, 0, 0},																// 39
-										   {0, 0, 0},																// 40
-										   {0, 0, 0},																// 41
-										   {0, 0, 0},																// 42
-										   {0, 0, 0},																// 43
-										   {0, 0, 0},																// 44
-										   {0, 0, 0},																// 45
-										   {0, 0, 0},																// 46
+										   {0, UINT16_MAX, 0},														// 11
+										   {0, X_D_DEF3, X_D_DEF2},													// 12
+										   {0, UINT16_MAX, 0},														// 13
+										   {0, UINT16_MAX, 0},														// 14
+										   {0, X_D_DEF3, X_D_DEF2},													// 15
+										   {0, UINT16_MAX, 0},														// 16
+										   {0, UINT16_MAX, 0},														// 17
+										   {0, X_D_DEF3, X_D_DEF2},													// 18
+										   {0, UINT16_MAX, 0},														// 19
+										   {0, UINT16_MAX, 0},														// 20
+										   {0, X_D_DEF3, X_D_DEF2},													// 21
+										   {0, UINT16_MAX, 0},														// 22
+										   {0, UINT16_MAX, 0},														// 23
+										   {0, X_D_DEF3, X_D_DEF2},													// 24
+										   {0, UINT16_MAX, 0},														// 25
+										   {0, UINT16_MAX, 0},														// 26
+										   {0, X_D_DEF3, X_D_DEF2},													// 27
+										   {0, UINT16_MAX, 0},														// 28
+										   {0, UINT16_MAX, 0},														// 29
+										   {0, X_D_DEF3, X_D_DEF2},													// 30
+										   {0, UINT16_MAX, 0},														// 31
+										   {0, UINT16_MAX, 0},														// 32
+										   {0, X_D_DEF3, X_D_DEF2},													// 33
+										   {0, UINT16_MAX, 0},														// 34
+										   {0, UINT16_MAX, 0},														// 35
+										   {0, X_D_DEF3, X_D_DEF2},													// 36
+										   {0, UINT16_MAX, 0},														// 37
+										   {0, UINT16_MAX, 0},														// 38
+										   {0, X_D_DEF3, X_D_DEF2},													// 39
+										   {0, UINT16_MAX, 0},														// 40
+										   {0, UINT16_MAX, 0},														// 41
+										   {0, X_D_DEF3, X_D_DEF2},													// 42
+										   {0, UINT16_MAX, 0},														// 43
+										   {0, UINT16_MAX, 0},														// 44
+										   {0, UINT16_MAX, 0},														// 45
+										   {0, UINT16_MAX, 0},														// 46
 										   {0, 0, 0},																// 47
 										   {0, 0, 0},																// 48
 										   {0, 0, 0},																// 49
-										   {0, 0, 0},																// 50
-										   {0, 0, 0},																// 51
+										   {1, UINT16_MAX, FLATTOP_DUT_US_DEF},										// 50
+										   {1, 1000, FLATTOP_DUT_HYST_DEF},											// 51
 										   {0, 0, 0},																// 52
 										   {0, 0, 0},																// 53
 										   {0, 0, 0},																// 54
@@ -156,8 +156,8 @@ const TableItemConstraint VConstraint[DATA_TABLE_WP_START - DATA_TABLE_WR_START]
 										   {MODE_QRR, SCOPE_CURRENT_ONLY ? MODE_QRR : MODE_QRR_TQ, MODE_QRR},		// 129
 										   {NO, YES, NO},															// 130
 										   {VOLTAGE_AMPL_MIN, VOLTAGE_AMPL_MAX, VOLTAGE_AMPL_DEF},					// 131
-										   {0, 0, 0},																// 132
-										   {0, 0, 0},																// 133
+										   {0, UINT16_MAX, 0},														// 132
+										   {CURRENT_THRESHOLD_MIN, CURRENT_THRESHOLD_MAX, CURRENT_THRESHOLD_DEF},	// 133
 										   {0, 0, 0},																// 134
 										   {0, 0, 0},																// 135
 										   {0, 0, 0},																// 136

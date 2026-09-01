@@ -3,3 +3,6 @@
 /Release/*.pdb
 /.vs
 /HighSpeedSampler/Release
+/HighSpeedSampler/git_info.h
+/Debug
+/HighSpeedSampler/Debug

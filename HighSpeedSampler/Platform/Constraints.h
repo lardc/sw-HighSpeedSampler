@@ -28,13 +28,20 @@ typedef struct __TableItemConstraint
 #define X_D_DEF2				1000
 #define X_D_DEF3				10000
 //
-#define CURRENT_AMPL_MIN		320		// in A
+#define CURRENT_AMPL_MIN		50		// in A
 #define CURRENT_AMPL_MAX		3200	// in A
 #define CURRENT_AMPL_DEF		2000	// in A
 //
 #define VOLTAGE_AMPL_MIN		100		// in V
 #define VOLTAGE_AMPL_MAX		4500	// in V
 #define VOLTAGE_AMPL_DEF		2000	// in V
+//
+#define FLATTOP_DUT_US_DEF		100		// in us
+#define FLATTOP_DUT_HYST_DEF	900		// 0.9 * 1000
+//
+#define CURRENT_THRESHOLD_MIN	1		// (in %)
+#define CURRENT_THRESHOLD_MAX	100		// (in %)
+#define CURRENT_THRESHOLD_DEF	5		// (in %)
 
 
 // Variables
