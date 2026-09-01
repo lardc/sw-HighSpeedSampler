@@ -111,7 +111,8 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 // ----------------------------------------
 
 PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, float* Irr, float* trr, float* Qrr,
-	float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09, float* trs, float* trf, float* Vr_min, uint16_t SetVd, bool* DutTrig)
+	float* dIdt, float* Id, float* Vd, bool UseVoltage, bool UseTrr050Method, uint32_t* Index0V, float* Time09,
+	float* trs, float* trf, float* Vr_min, uint16_t SetVd, bool* DutTrig, uint32_t* IndexIrr)
 {
 	char message[256];
 
@@ -204,19 +205,20 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					// Calculate Index0 and Irr parameters
-					uint32_t Index_0 = 0, Index_irr = 0;
-					if (!CALC_IrrAndZeroCrossingIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, &Index_0, &Index_irr))
+					uint32_t Index_0 = 0, Index_Irr = 0;
+					if (!CALC_IrrAndZeroCrossingIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, &Index_0, &Index_Irr))
 						throw PROBLEM_CALC_IRR;
 
 					if (Index0) *Index0 = Index_0;
-					if (Irr) *Irr = fabsf(MEMBUF_fScopeIFiltered[Index_irr]);
+					if (IndexIrr) *IndexIrr = Index_Irr;
+					if (Irr) *Irr = fabsf(MEMBUF_fScopeIFiltered[Index_Irr]);
 
-					sprintf_s(message, 256, "Index 0: %d; Index Irr: %d", Index_0, Index_irr);
+					sprintf_s(message, 256, "Index 0: %d; Index Irr: %d", Index_0, Index_Irr);
 					InfoPrint(IP_Info, message);
 
 					// Calculate Irr pivot points
 					uint32_t Index_025 = 0;
-					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_irr,
+					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_Irr,
 						UseTrr050Method ? 0.5f : 0.25f, &Index_025))
 						throw PROBLEM_CALC_IRR_025;
 
@@ -224,7 +226,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					InfoPrint(IP_Info, message);
 
 					uint32_t Index_09 = 0;
-					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_irr, 0.9f, &Index_09))
+					if (!CALC_IrrFractionIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, Index_Irr, 0.9f, &Index_09))
 						throw PROBLEM_CALC_IRR_090;
 
 					sprintf_s(message, 256, "Index Irr_high (0.9): %d", Index_09);
@@ -266,7 +268,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					}
 
 					// Calculate trs, trf
-					float _trs = TunedSamplingTimeFraction * (Index_irr - Index_0);
+					float _trs = TunedSamplingTimeFraction * (Index_Irr - Index_0);
 					float _trf = trr_tuned - _trs;
 					sprintf_s(message, 256, "trs: %.3f, trf: %.3f", _trs, _trf);
 					InfoPrint(IP_Info, message);
@@ -282,7 +284,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					if (Qrr) *Qrr = _Qrr;
 
 					// Calculate actual dIdt (unfixed sampling time is used)
-					if (!CALC_dIdt(MEMBUF_fScopeIFiltered, Index_0, Index_irr, SAMPLING_TIME_FRACTION, &Actual_dIdt))
+					if (!CALC_dIdt(MEMBUF_fScopeIFiltered, Index_0, Index_Irr, SAMPLING_TIME_FRACTION, &Actual_dIdt))
 						throw PROBLEM_CALC_DIDT;
 
 					if (dIdt) *dIdt = Actual_dIdt;
@@ -345,42 +347,71 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 // ----------------------------------------
 
 uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
-	uint32_t Index0, uint32_t MulFactor, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps, float OutMulFactor)
+	uint32_t Index0, uint32_t MulFactor, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps, float OutMulFactor,
+	bool ModeQrr, uint32_t IndexIrr)
 {
-	uint16_t Counter, dsRatio, i = 0;
-	uint32_t TrimmedDataCounter;
+	if (MEMBUF_Scope_Counter == 0)
+		return 0;
 
-	// Trim data in case of successful calculations
+	uint32_t startIndex = 0, endIndex = MEMBUF_Scope_Counter - 1;
+
 	if (ForceSectorRead > 0)
 	{
-		TrimmedDataCounter = (ForceSectorRead < MEMBUF_Scope_Counter) ? ForceSectorRead : MEMBUF_Scope_Counter;
+		// Diagnostic override: take a forced-length sector from the start of the capture
+		endIndex = (ForceSectorRead < endIndex) ? ForceSectorRead : endIndex;
+	}
+	else if (ModeQrr && CalcOK && Index0 > 0 && IndexIrr > 0 && DataTable[REG_CURRENT_THRESHOLD] > 0)
+	{
+		// QRR only: window from zero-crossing until |I| recovers to the threshold % of Irr
+		float CurrentThreshold = MEMBUF_fScopeIFiltered[IndexIrr] * DataTable[REG_CURRENT_THRESHOLD] / 100.0f;
+		
+		uint32_t NewEndIndex = IndexIrr;
+		for (; NewEndIndex < MEMBUF_Scope_Counter; NewEndIndex++)
+		{
+			if (MEMBUF_fScopeIFiltered[NewEndIndex] > CurrentThreshold)
+				break;
+		}
+
+		startIndex = Index0;
+		endIndex = NewEndIndex;
 	}
 	else
 	{
-		// 4 x (fall time from Imax to zero)
-		TrimmedDataCounter = ((MulFactor * Index0) < MEMBUF_Scope_Counter && CalcOK && Index0 > 0) ? (MulFactor * Index0) : MEMBUF_Scope_Counter;
+		// Default trim: MulFactor * Index0, or the full buffer
+		endIndex = ((MulFactor * Index0) < endIndex && CalcOK && Index0 > 0) ? (MulFactor * Index0) : endIndex;
 	}
 
-	// Downsample ratio
-	dsRatio = TrimmedDataCounter / BufferSize + 1;
-	Counter = TrimmedDataCounter / dsRatio;
+	if (endIndex <= startIndex || BufferSize == 0)
+	{
+		if (SampleTimeSteps)
+			*SampleTimeSteps = 1;
+		return 0;
+	}
 
-	for (i = 0; i < Counter; ++i)
-		Buffer[i] = (uint16_t)((int16_t)(SrcBuffer[i * dsRatio] * OutMulFactor));
+	// Fit the window into the endpoint; one EP step equals dsRatio scope samples
+	uint32_t SelectedPointsCounter = endIndex - startIndex, dsRatio = 1;
+	if (SelectedPointsCounter > BufferSize)
+		dsRatio = SelectedPointsCounter / BufferSize + 1;
+
+	uint32_t srcIndex = startIndex;
+	uint16_t outIndex = 0;
+	for (; (outIndex < BufferSize) && (srcIndex < MEMBUF_Scope_Counter); srcIndex += dsRatio, outIndex++)
+		Buffer[outIndex] = (uint16_t)((int16_t)(SrcBuffer[srcIndex] * OutMulFactor));
 
 	if (SampleTimeSteps)
 		*SampleTimeSteps = dsRatio;
 
-	return i;
+	return outIndex;
 }
 // ----------------------------------------
 
 uint16_t LOGIC_GetIData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
-	bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps)
+	bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps,
+	uint32_t IndexIrr)
 {
 	return LOGIC_GetXData(MEMBUF_fScopeIFiltered, Buffer, BufferSize, CalcOK,
 		ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V,
-		ForceSectorRead, SampleTimeSteps, EP_CURRENT_MUL);
+		ForceSectorRead, SampleTimeSteps, EP_CURRENT_MUL, ModeQrr, IndexIrr);
 }
 // ----------------------------------------
 
@@ -389,7 +420,7 @@ uint16_t LOGIC_GetVData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
 {
 	return LOGIC_GetXData(MEMBUF_fScopeVFiltered, Buffer, BufferSize, CalcOK,
 		ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V,
-		ForceSectorRead, SampleTimeSteps, EP_VOLTAGE_MUL);
+		ForceSectorRead, SampleTimeSteps, EP_VOLTAGE_MUL, ModeQrr, 0);
 }
 // ----------------------------------------
 

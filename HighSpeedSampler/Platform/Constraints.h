@@ -38,6 +38,10 @@ typedef struct __TableItemConstraint
 //
 #define FLATTOP_DUT_US_DEF		100		// in us
 #define FLATTOP_DUT_HYST_DEF	900		// 0.9 * 1000
+//
+#define CURRENT_THRESHOLD_MIN	0		// (in %)
+#define CURRENT_THRESHOLD_MAX	100		// (in %)
+#define CURRENT_THRESHOLD_DEF	5		// (in %)
 
 
 // Variables

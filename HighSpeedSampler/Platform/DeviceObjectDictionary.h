@@ -96,6 +96,7 @@
 #define REG_TR_050_METHOD			130	// Use 50% level of Irr to detect tr time
 #define REG_VOLTAGE_AMPL			131	// Voltage amplitude (in V)
 #define REG_DC_FALL_TIME			132 // Current fall rate (in us)
+#define REG_CURRENT_THRESHOLD		133	// Last graph point threshold (% of Irr)
 //
 #define REG_DIAG_FORCE_SECTOR_READ	150	// Force read of defined time sector from scopes (in us)
 #define REG_DIAG_FULL_ARR_SCALE		151	// Scale factor for full-array read

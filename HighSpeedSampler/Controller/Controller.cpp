@@ -219,14 +219,14 @@ void CONTROL_HandleSamplerData()
 			bool CalcOK;
 			bool DutTrig = false;
 			uint16_t CalcProblem = 0;
-			uint32_t Index0 = 0, Index0V = 0;
+			uint32_t Index0 = 0, Index0V = 0, IndexIrr = 0;
 			float Irr = 0, trr = 0, Qrr = 0, dIdt = 0, Id = 0, Vd = 0, Time09 = 0, Vr_min = 0;
 			float trs = 0, trf = 0;
 
 			InfoPrint(IP_Info, "Sampling finished");
 			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt, &Id, &Vd,
 				(DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true,
-				&Index0V, &Time09, &trs, &trf, &Vr_min, DataTable[REG_VOLTAGE_AMPL], &DutTrig);
+				&Index0V, &Time09, &trs, &trf, &Vr_min, DataTable[REG_VOLTAGE_AMPL], &DutTrig, &IndexIrr);
 			CalcOK = (CalcProblem == PROBLEM_NONE) ? true : false;
 			uint32_t intQrr = (uint32_t)(Qrr * 10);
 
@@ -242,7 +242,7 @@ void CONTROL_HandleSamplerData()
 			DataTable[REG_RESULT_TIME_0_90] = (uint16_t)(Time09 * 100);
 			DataTable[REG_RESULT_TRS] =		(uint16_t)(trs * 100);
 			DataTable[REG_RESULT_TRF] =		(uint16_t)(trf * 100);
-			DataTable[REG_RESULT_DUT_TRIG] =	DutTrig ? 1 : 0;
+			DataTable[REG_RESULT_DUT_TRIG] = DutTrig ? 1 : 0;
 			DataTable[REG_RESULT_VR_MIN] =	(uint16_t)((int16_t)Vr_min);
 
 			if (status != PICO_OK)
@@ -251,8 +251,10 @@ void CONTROL_HandleSamplerData()
 			{
 				uint16_t SampleTimeStep;
 				uint32_t forced_sector = (uint32_t)((float)DataTable[REG_DIAG_FORCE_SECTOR_READ] / SAMPLING_TIME_FRACTION);
-				MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, &SampleTimeStep);
-				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE, CalcOK, DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, NULL);
+				MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE, CalcOK,
+					DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, &SampleTimeStep, IndexIrr);
+				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE, CalcOK,
+					DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, NULL);
 
 				DataTable[REG_EP_STEP_FRACTION_CNT] = CalcOK ? SampleTimeStep : 1;
 				DataTable[REG_OP_RESULT] = CalcOK ? OPRESULT_OK : OPRESULT_FAIL;
