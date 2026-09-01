@@ -373,7 +373,7 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 		}
 
 		startIndex = Index0;
-		endIndex = NewEndIndex;
+		endIndex = (MEMBUF_Scope_Counter == NewEndIndex) ? (MEMBUF_Scope_Counter - 1) : NewEndIndex;
 	}
 	else
 	{
