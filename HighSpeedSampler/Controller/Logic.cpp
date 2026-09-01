@@ -389,13 +389,13 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 	}
 
 	// Fit the window into the endpoint; one EP step equals dsRatio scope samples
-	uint32_t SelectedPointsCounter = endIndex - startIndex, dsRatio = 1;
+	uint32_t SelectedPointsCounter = endIndex - startIndex + 1, dsRatio = 1;
 	if (SelectedPointsCounter > BufferSize)
 		dsRatio = SelectedPointsCounter / BufferSize + 1;
 
 	uint32_t srcIndex = startIndex;
 	uint16_t outIndex = 0;
-	for (; (outIndex < BufferSize) && (srcIndex < endIndex) && (srcIndex < MEMBUF_Scope_Counter); srcIndex += dsRatio, outIndex++)
+	for (; (outIndex < BufferSize) && (srcIndex <= endIndex) && (srcIndex < MEMBUF_Scope_Counter); srcIndex += dsRatio, outIndex++)
 		Buffer[outIndex] = (uint16_t)((int16_t)(SrcBuffer[srcIndex] * OutMulFactor));
 
 	if (SampleTimeSteps)
