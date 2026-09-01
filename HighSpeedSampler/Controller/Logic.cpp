@@ -395,7 +395,7 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 
 	uint32_t srcIndex = startIndex;
 	uint16_t outIndex = 0;
-	for (; (outIndex < BufferSize) && (srcIndex < MEMBUF_Scope_Counter); srcIndex += dsRatio, outIndex++)
+	for (; (outIndex < BufferSize) && (srcIndex < endIndex) && (srcIndex < MEMBUF_Scope_Counter); srcIndex += dsRatio, outIndex++)
 		Buffer[outIndex] = (uint16_t)((int16_t)(SrcBuffer[srcIndex] * OutMulFactor));
 
 	if (SampleTimeSteps)
