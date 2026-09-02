@@ -216,7 +216,6 @@ void CONTROL_HandleSamplerData()
 	{
 		if (SAMPLING_Finished())
 		{
-			bool CalcOK;
 			bool DutTrig = false;
 			uint16_t CalcProblem = 0;
 			uint32_t Index0 = 0, Index0V = 0, IndexIrr = 0;
@@ -227,42 +226,48 @@ void CONTROL_HandleSamplerData()
 			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt, &Id, &Vd,
 				(DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true,
 				&Index0V, &Time09, &trs, &trf, &Vr_min, DataTable[REG_VOLTAGE_AMPL], &DutTrig, &IndexIrr);
-			CalcOK = (CalcProblem == PROBLEM_NONE) ? true : false;
-			uint32_t intQrr = (uint32_t)(Qrr * 10);
-
-			DataTable[REG_RESULT_IRR] =		(uint16_t)(Irr * 10);
-			DataTable[REG_RESULT_TRR] =		(uint16_t)(trr * 100);
-			DataTable[REG_RESULT_QRR] =		intQrr & 0xffff;
-			DataTable[REG_RESULT_ZERO] =	(uint16_t)(Index0 * SAMPLING_TIME_FRACTION * 10);
-			DataTable[REG_RESULT_ZERO_V] =	(uint16_t)(Index0V * SAMPLING_TIME_FRACTION * 10);
-			DataTable[REG_RESULT_DIDT] =	(uint16_t)(dIdt * 100);
-			DataTable[REG_RESULT_ID] =		(uint16_t)Id;
-			DataTable[REG_RESULT_VD] =		(uint16_t)Vd;
-			DataTable[REG_RESULT_QRR_B32] = intQrr >> 16;
-			DataTable[REG_RESULT_TIME_0_90] = (uint16_t)(Time09 * 100);
-			DataTable[REG_RESULT_TRS] =		(uint16_t)(trs * 100);
-			DataTable[REG_RESULT_TRF] =		(uint16_t)(trf * 100);
-			DataTable[REG_RESULT_DUT_TRIG] = DutTrig ? 1 : 0;
-			DataTable[REG_RESULT_VR_MIN] =	(uint16_t)((int16_t)Vr_min);
+			
+			CONTROL_DeleteRS232Timer();
 
 			if (status != PICO_OK)
+			{
 				CONTROL_SwitchStateToDisabled(DF_PICOSCOPE, status);
+				return;
+			}
+
+			uint16_t SampleTimeStep = 1;
+			uint32_t forced_sector = (uint32_t)((float)DataTable[REG_DIAG_FORCE_SECTOR_READ] / SAMPLING_TIME_FRACTION);
+			MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE,
+				DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, &SampleTimeStep, IndexIrr);
+			MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE,
+				DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, NULL);
+			DataTable[REG_EP_STEP_FRACTION_CNT] = SampleTimeStep;
+
+			if(CalcProblem == PROBLEM_NONE)
+			{
+				uint32_t intQrr = (uint32_t)(Qrr * 10);
+				DataTable[REG_RESULT_IRR] = (uint16_t)(Irr * 10);
+				DataTable[REG_RESULT_TRR] = (uint16_t)(trr * 100);
+				DataTable[REG_RESULT_QRR] = intQrr & 0xffff;
+				DataTable[REG_RESULT_ZERO_I] = (uint16_t)(Index0 * SAMPLING_TIME_FRACTION * 10);
+				DataTable[REG_RESULT_ZERO_V] = (uint16_t)(Index0V * SAMPLING_TIME_FRACTION * 10);
+				DataTable[REG_RESULT_DIDT] = (uint16_t)(dIdt * 100);
+				DataTable[REG_RESULT_ID] = (uint16_t)Id;
+				DataTable[REG_RESULT_VD] = (uint16_t)Vd;
+				DataTable[REG_RESULT_QRR_B32] = intQrr >> 16;
+				DataTable[REG_RESULT_TIME_0_90] = (uint16_t)(Time09 * 100);
+				DataTable[REG_RESULT_TRS] = (uint16_t)(trs * 100);
+				DataTable[REG_RESULT_TRF] = (uint16_t)(trf * 100);
+				DataTable[REG_RESULT_DUT_TRIG] = DutTrig ? 1 : 0;
+				DataTable[REG_RESULT_VR_MIN] = (uint16_t)((int16_t)Vr_min);
+				DataTable[REG_OP_RESULT] = OPRESULT_OK;
+			}
 			else
 			{
-				uint16_t SampleTimeStep;
-				uint32_t forced_sector = (uint32_t)((float)DataTable[REG_DIAG_FORCE_SECTOR_READ] / SAMPLING_TIME_FRACTION);
-				MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE, CalcOK,
-					DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, &SampleTimeStep, IndexIrr);
-				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE, CalcOK,
-					DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, NULL);
-
-				DataTable[REG_EP_STEP_FRACTION_CNT] = CalcOK ? SampleTimeStep : 1;
-				DataTable[REG_OP_RESULT] = CalcOK ? OPRESULT_OK : OPRESULT_FAIL;
+				DataTable[REG_OP_RESULT] = OPRESULT_FAIL;
 				DataTable[REG_PROBLEM] = CalcProblem;
-				
-				CONTROL_SetDeviceState(DS_None);
 			}
-			CONTROL_DeleteRS232Timer();
+			CONTROL_SetDeviceState(DS_None);
 		}
 	}
 }
@@ -281,7 +286,7 @@ void CONTROL_FillWPPartDefault()
 	DataTable[REG_RESULT_IRR] = 0;
 	DataTable[REG_RESULT_TRR] = 0;
 	DataTable[REG_RESULT_QRR] = 0;
-	DataTable[REG_RESULT_ZERO] = 0;
+	DataTable[REG_RESULT_ZERO_I] = 0;
 	DataTable[REG_RESULT_ZERO_V] = 0;
 	DataTable[REG_RESULT_DIDT] = 0;
 	DataTable[REG_RESULT_ID] = 0;

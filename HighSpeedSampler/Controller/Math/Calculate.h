@@ -24,6 +24,6 @@ bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, flo
 // Calculate Id
 float CALC_Id(float* Buffer, uint32_t t0);
 // Calculate Vr_min
-bool CALC_Vr_min(float* Buffer, uint32_t CrossingIndI, uint32_t CrossingIndV, float* Vr_min);
+void CALC_Vr_min(float* Buffer, uint32_t CrossingIndI, uint32_t CrossingIndV, float* Vr_min);
 
 #endif	// __CALCULATE_H__

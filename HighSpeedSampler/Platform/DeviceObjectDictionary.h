@@ -121,7 +121,7 @@
 #define REG_RESULT_IRR				201	// Reverse recovery current amplitude (in A x10)
 #define REG_RESULT_TRR				202	// Reverse recovery time (in us x100)
 #define REG_RESULT_QRR				203	// Reverse recovery charge (in uQ x10)
-#define REG_RESULT_ZERO				204	// Zero-cross time (in us x10)
+#define REG_RESULT_ZERO_I			204	// Zero-cross time for current (in us x10)
 #define REG_RESULT_ZERO_V			205	// Zero-cross time for on-state voltage (in us x10)
 #define REG_RESULT_DIDT				206	// Actual value of dIdt (in A/us x100)
 #define REG_RESULT_ID				207	// Direct current amplitude (in A)
@@ -170,11 +170,10 @@
 #define PROBLEM_CALC_IRR			1	// Problem calculating Irr
 #define PROBLEM_CALC_IRR_025		2	// Problem calculating 25% fraction Irr
 #define PROBLEM_CALC_IRR_090		3	// Problem calculating 90% fraction Irr
-#define PROBLEM_CALC_VZ				4	// Problem calculating V zero crossing
+//
 #define PROBLEM_CALC_DIDT			5	// Problem calculating actual dIdt
 #define PROBLEM_CALC_TRR			6	// Problem calculating trr
 #define PROBLEM_CALC_QRR			7	// Problem calculating Qrr
-#define PROBLEM_CALC_VR_MIN			8	// Problem calculating Vr_min
 
 // FAULT & DISABLE
 //

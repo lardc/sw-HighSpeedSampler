@@ -298,38 +298,40 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					sprintf_s(message, 256, "Idc: %.1f", *Id);
 					InfoPrint(IP_Info, message);
 
-					// Calculate voltage zero crossing
-					uint32_t Index_0V = 0, Index_Vd = 0;
+					// Calculate voltage parameters
 					if (UseVoltage && !SCOPE_CURRENT_ONLY)
 					{
+						float _Vr_min = 0.0f;
+						CALC_Vr_min(MEMBUF_fScopeVFiltered, Index_0, Index_trr, &_Vr_min);
+						if (Vr_min) *Vr_min = _Vr_min;
+
+						sprintf_s(message, 256, "Vr_min: %.1f", _Vr_min);
+						InfoPrint(IP_Info, message);
+
+						uint32_t Index_0V = 0, Index_Vd = 0;
 						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd, &Index_Vd);
+						if (Index0V) *Index0V = Index_0V;
 
-						sprintf_s(message, 256, "SetVd: %u", SetVd);
+						sprintf_s(message, 256, "Set Vd: %u, detected Vd: %.1f", SetVd, *Vd);
 						InfoPrint(IP_Info, message);
 
-						sprintf_s(message, 256, "Vd: %.1f", *Vd);
-						InfoPrint(IP_Info, message);
-
-						if (!ZeroCrossingCalcOK)
-							throw PROBLEM_CALC_VZ;
-
-						if (DutTrig)
-							*DutTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd,
+						// Extra logic for DUT trig check
+						if (ZeroCrossingCalcOK)
+						{
+							bool _DUTTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd,
 								DataTable[REG_FLATTOP_DUT_US], (float)DataTable[REG_FLATTOP_DUT_HYST] / 1000.0f);
+							if (DutTrig) *DutTrig = _DUTTrig;
 
-						sprintf_s(message, 256, "Index V0: %d", Index_0V);
-						InfoPrint(IP_Info, message);
-					}
-					if (Index0V) *Index0V = Index_0V;
-
-					// Calculate reverse voltage amplitude
-					if (UseVoltage && !SCOPE_CURRENT_ONLY)
-					{
-						if (!CALC_Vr_min(MEMBUF_fScopeVFiltered, Index_0, Index_0V, Vr_min))
-							throw PROBLEM_CALC_VR_MIN;
-
-						sprintf_s(message, 256, "Vr_min: %.1f", *Vr_min);
-						InfoPrint(IP_Info, message);
+							sprintf_s(message, 256, "Extra logic for DUT trig detection: %s, index V0: %d",
+								_DUTTrig ? "DUT trigged" : "DUT not trigged", Index_0V);
+							InfoPrint(IP_Info, message);
+						}
+						else
+						{
+							sprintf_s(message, 256, "DUT trigged based of zero-voltage calc fail");
+							InfoPrint(IP_Info, message);
+							if (DutTrig) *DutTrig = true;
+						}
 					}
 				}
 				catch(int problem)
@@ -346,11 +348,11 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 }
 // ----------------------------------------
 
-uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
+uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 	uint32_t Index0, uint32_t MulFactor, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps, float OutMulFactor,
 	bool ModeQrr, uint32_t IndexIrr)
 {
-	if (MEMBUF_Scope_Counter == 0)
+	if (MEMBUF_Scope_Counter == 0 || BufferSize == 0)
 		return 0;
 
 	uint32_t startIndex = 0, endIndex = MEMBUF_Scope_Counter - 1;
@@ -360,7 +362,7 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 		// Diagnostic override: take a forced-length sector from the start of the capture
 		endIndex = (ForceSectorRead < endIndex) ? ForceSectorRead : endIndex;
 	}
-	else if (ModeQrr && CalcOK && Index0 > 0 && IndexIrr > 0 && DataTable[REG_CURRENT_THRESHOLD] > 0)
+	else if (ModeQrr && Index0 > 0 && IndexIrr > 0 && DataTable[REG_CURRENT_THRESHOLD] > 0)
 	{
 		// QRR only: window from zero-crossing until |I| recovers to the threshold % of Irr
 		float CurrentThreshold = MEMBUF_fScopeIFiltered[IndexIrr] * DataTable[REG_CURRENT_THRESHOLD] / 100.0f;
@@ -378,14 +380,7 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 	else
 	{
 		// Default trim: MulFactor * Index0, or the full buffer
-		endIndex = ((MulFactor * Index0) < endIndex && CalcOK && Index0 > 0) ? (MulFactor * Index0) : endIndex;
-	}
-
-	if (endIndex <= startIndex || BufferSize == 0)
-	{
-		if (SampleTimeSteps)
-			*SampleTimeSteps = 1;
-		return 0;
+		endIndex = ((MulFactor * Index0) < endIndex && Index0 > 0) ? (MulFactor * Index0) : endIndex;
 	}
 
 	// Fit the window into the endpoint; one EP step equals dsRatio scope samples
@@ -405,20 +400,20 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 }
 // ----------------------------------------
 
-uint16_t LOGIC_GetIData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
+uint16_t LOGIC_GetIData(uint16_t* Buffer, uint16_t BufferSize,
 	bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps,
 	uint32_t IndexIrr)
 {
-	return LOGIC_GetXData(MEMBUF_fScopeIFiltered, Buffer, BufferSize, CalcOK,
+	return LOGIC_GetXData(MEMBUF_fScopeIFiltered, Buffer, BufferSize,
 		ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V,
 		ForceSectorRead, SampleTimeSteps, EP_CURRENT_MUL, ModeQrr, IndexIrr);
 }
 // ----------------------------------------
 
-uint16_t LOGIC_GetVData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
+uint16_t LOGIC_GetVData(uint16_t* Buffer, uint16_t BufferSize,
 	bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps)
 {
-	return LOGIC_GetXData(MEMBUF_fScopeVFiltered, Buffer, BufferSize, CalcOK,
+	return LOGIC_GetXData(MEMBUF_fScopeVFiltered, Buffer, BufferSize,
 		ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V,
 		ForceSectorRead, SampleTimeSteps, EP_VOLTAGE_MUL, ModeQrr, 0);
 }
