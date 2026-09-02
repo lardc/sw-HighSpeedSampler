@@ -348,11 +348,11 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 }
 // ----------------------------------------
 
-uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
+uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 	uint32_t Index0, uint32_t MulFactor, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps, float OutMulFactor,
 	bool ModeQrr, uint32_t IndexIrr)
 {
-	if (MEMBUF_Scope_Counter == 0)
+	if (MEMBUF_Scope_Counter == 0 || BufferSize == 0)
 		return 0;
 
 	uint32_t startIndex = 0, endIndex = MEMBUF_Scope_Counter - 1;
@@ -362,7 +362,7 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 		// Diagnostic override: take a forced-length sector from the start of the capture
 		endIndex = (ForceSectorRead < endIndex) ? ForceSectorRead : endIndex;
 	}
-	else if (ModeQrr && CalcOK && Index0 > 0 && IndexIrr > 0 && DataTable[REG_CURRENT_THRESHOLD] > 0)
+	else if (ModeQrr && Index0 > 0 && IndexIrr > 0 && DataTable[REG_CURRENT_THRESHOLD] > 0)
 	{
 		// QRR only: window from zero-crossing until |I| recovers to the threshold % of Irr
 		float CurrentThreshold = MEMBUF_fScopeIFiltered[IndexIrr] * DataTable[REG_CURRENT_THRESHOLD] / 100.0f;
@@ -380,14 +380,7 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 	else
 	{
 		// Default trim: MulFactor * Index0, or the full buffer
-		endIndex = ((MulFactor * Index0) < endIndex && CalcOK && Index0 > 0) ? (MulFactor * Index0) : endIndex;
-	}
-
-	if (endIndex <= startIndex || BufferSize == 0)
-	{
-		if (SampleTimeSteps)
-			*SampleTimeSteps = 1;
-		return 0;
+		endIndex = ((MulFactor * Index0) < endIndex && Index0 > 0) ? (MulFactor * Index0) : endIndex;
 	}
 
 	// Fit the window into the endpoint; one EP step equals dsRatio scope samples
@@ -407,20 +400,20 @@ uint16_t LOGIC_GetXData(float* SrcBuffer, uint16_t* Buffer, uint16_t BufferSize,
 }
 // ----------------------------------------
 
-uint16_t LOGIC_GetIData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
+uint16_t LOGIC_GetIData(uint16_t* Buffer, uint16_t BufferSize,
 	bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps,
 	uint32_t IndexIrr)
 {
-	return LOGIC_GetXData(MEMBUF_fScopeIFiltered, Buffer, BufferSize, CalcOK,
+	return LOGIC_GetXData(MEMBUF_fScopeIFiltered, Buffer, BufferSize,
 		ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V,
 		ForceSectorRead, SampleTimeSteps, EP_CURRENT_MUL, ModeQrr, IndexIrr);
 }
 // ----------------------------------------
 
-uint16_t LOGIC_GetVData(uint16_t* Buffer, uint16_t BufferSize, bool CalcOK,
+uint16_t LOGIC_GetVData(uint16_t* Buffer, uint16_t BufferSize,
 	bool ModeQrr, uint32_t Index0, uint32_t Index0V, uint32_t ForceSectorRead, uint16_t* SampleTimeSteps)
 {
-	return LOGIC_GetXData(MEMBUF_fScopeVFiltered, Buffer, BufferSize, CalcOK,
+	return LOGIC_GetXData(MEMBUF_fScopeVFiltered, Buffer, BufferSize,
 		ModeQrr ? Index0 : Index0V, ModeQrr ? MUL_FACTOR_I : MUL_FACTOR_V,
 		ForceSectorRead, SampleTimeSteps, EP_VOLTAGE_MUL, ModeQrr, 0);
 }
