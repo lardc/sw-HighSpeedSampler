@@ -220,19 +220,12 @@ bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t VdIndex, uint16
 }
 //----------------------------------------------
 
-bool CALC_Vr_min(float* Buffer, uint32_t CrossingIndI, uint32_t CrossingIndV, float* Vr_min)
+void CALC_Vr_min(float* Buffer, uint32_t Index0, uint32_t Index_trr, float* Vr_min)
 {
-	uint32_t i;
-	float VoltMin;
-
-	if (CrossingIndI >= CrossingIndV)
-		return false;
-
-	VoltMin = Buffer[CrossingIndI];
-	for (i = CrossingIndI; i < CrossingIndV; ++i)
+	float VoltMin = Buffer[Index0];
+	for (uint32_t i = Index0 + 1; i < Index_trr; ++i)
 		if (Buffer[i] < VoltMin) VoltMin = Buffer[i];
 
 	*Vr_min = VoltMin;
-	return true;
 }
 //----------------------------------------------

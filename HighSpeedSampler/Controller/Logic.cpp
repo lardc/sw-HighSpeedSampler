@@ -298,38 +298,40 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					sprintf_s(message, 256, "Idc: %.1f", *Id);
 					InfoPrint(IP_Info, message);
 
-					// Calculate voltage zero crossing
-					uint32_t Index_0V = 0, Index_Vd = 0;
+					// Calculate voltage parameters
 					if (UseVoltage && !SCOPE_CURRENT_ONLY)
 					{
+						float _Vr_min = 0.0f;
+						CALC_Vr_min(MEMBUF_fScopeVFiltered, Index_0, Index_trr, &_Vr_min);
+						if (Vr_min) *Vr_min = _Vr_min;
+
+						sprintf_s(message, 256, "Vr_min: %.1f", _Vr_min);
+						InfoPrint(IP_Info, message);
+
+						uint32_t Index_0V = 0, Index_Vd = 0;
 						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd, &Index_Vd);
+						if (Index0V) *Index0V = Index_0V;
 
-						sprintf_s(message, 256, "SetVd: %u", SetVd);
+						sprintf_s(message, 256, "Set Vd: %u, detected Vd: %.1f", SetVd, *Vd);
 						InfoPrint(IP_Info, message);
 
-						sprintf_s(message, 256, "Vd: %.1f", *Vd);
-						InfoPrint(IP_Info, message);
-
-						if (!ZeroCrossingCalcOK)
-							throw PROBLEM_CALC_VZ;
-
-						if (DutTrig)
-							*DutTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd,
+						// Extra logic for DUT trig check
+						if (ZeroCrossingCalcOK)
+						{
+							bool _DUTTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd,
 								DataTable[REG_FLATTOP_DUT_US], (float)DataTable[REG_FLATTOP_DUT_HYST] / 1000.0f);
+							if (DutTrig) *DutTrig = _DUTTrig;
 
-						sprintf_s(message, 256, "Index V0: %d", Index_0V);
-						InfoPrint(IP_Info, message);
-					}
-					if (Index0V) *Index0V = Index_0V;
-
-					// Calculate reverse voltage amplitude
-					if (UseVoltage && !SCOPE_CURRENT_ONLY)
-					{
-						if (!CALC_Vr_min(MEMBUF_fScopeVFiltered, Index_0, Index_0V, Vr_min))
-							throw PROBLEM_CALC_VR_MIN;
-
-						sprintf_s(message, 256, "Vr_min: %.1f", *Vr_min);
-						InfoPrint(IP_Info, message);
+							sprintf_s(message, 256, "Extra logic for DUT trig detection: %s, index V0: %d",
+								_DUTTrig ? "DUT trigged" : "DUT not trigged", Index_0V);
+							InfoPrint(IP_Info, message);
+						}
+						else
+						{
+							sprintf_s(message, 256, "DUT trigged based of zero-voltage calc fail");
+							InfoPrint(IP_Info, message);
+							if (DutTrig) *DutTrig = true;
+						}
 					}
 				}
 				catch(int problem)

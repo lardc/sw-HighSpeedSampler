@@ -233,7 +233,7 @@ void CONTROL_HandleSamplerData()
 			DataTable[REG_RESULT_IRR] =		(uint16_t)(Irr * 10);
 			DataTable[REG_RESULT_TRR] =		(uint16_t)(trr * 100);
 			DataTable[REG_RESULT_QRR] =		intQrr & 0xffff;
-			DataTable[REG_RESULT_ZERO] =	(uint16_t)(Index0 * SAMPLING_TIME_FRACTION * 10);
+			DataTable[REG_RESULT_ZERO_I] =	(uint16_t)(Index0 * SAMPLING_TIME_FRACTION * 10);
 			DataTable[REG_RESULT_ZERO_V] =	(uint16_t)(Index0V * SAMPLING_TIME_FRACTION * 10);
 			DataTable[REG_RESULT_DIDT] =	(uint16_t)(dIdt * 100);
 			DataTable[REG_RESULT_ID] =		(uint16_t)Id;
@@ -281,7 +281,7 @@ void CONTROL_FillWPPartDefault()
 	DataTable[REG_RESULT_IRR] = 0;
 	DataTable[REG_RESULT_TRR] = 0;
 	DataTable[REG_RESULT_QRR] = 0;
-	DataTable[REG_RESULT_ZERO] = 0;
+	DataTable[REG_RESULT_ZERO_I] = 0;
 	DataTable[REG_RESULT_ZERO_V] = 0;
 	DataTable[REG_RESULT_DIDT] = 0;
 	DataTable[REG_RESULT_ID] = 0;
