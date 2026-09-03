@@ -315,19 +315,24 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 							bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd, &Index_Vd);
 							if (Index0V) *Index0V = Index_0V;
 
-							sprintf_s(message, 256, "Set Vd: %u, detected Vd: %.1f", SetVd, *Vd);
+							sprintf_s(message, 256, "Set Vd: %u, detected Vd: %.1f, Index_0V: %d, Index_Vd: %d",
+								SetVd, *Vd, Index_0V, Index_Vd);
 							InfoPrint(IP_Info, message);
 
 							// Extra logic for DUT trig check
 							if (ZeroCrossingCalcOK)
 							{
-								bool _DUTTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd,
-									DataTable[REG_FLATTOP_DUT_US], (float)DataTable[REG_FLATTOP_DUT_HYST] / 1000.0f);
-								if (DutTrig) *DutTrig = _DUTTrig;
-
-								sprintf_s(message, 256, "Extra logic for DUT trig detection: %s, index V0: %d",
-									_DUTTrig ? "DUT trigged" : "DUT not trigged", Index_0V);
-								InfoPrint(IP_Info, message);
+								bool DUTTrigResult;
+								if (CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_0V, SetVd,
+									DataTable[REG_FLATTOP_DUT_US], (float)DataTable[REG_FLATTOP_DUT_HYST] / 1000.0f, &DUTTrigResult))
+								{
+									if (DutTrig) *DutTrig = DUTTrigResult;
+									sprintf_s(message, 256, "Extra logic for DUT trig detection: %s",
+										DUTTrigResult ? "DUT trigged" : "DUT not trigged");
+									InfoPrint(IP_Info, message);
+								}
+								else
+									throw PROBLEM_CALC_VD_TRIG;
 							}
 							else
 							{

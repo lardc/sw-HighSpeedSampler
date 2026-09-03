@@ -18,7 +18,8 @@ float CALC_Qrr(float* Buffer, uint32_t BufferLength, uint32_t t0, uint32_t trr, 
 // Calculate on-state voltage crossing index
 bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* CrossingIndex, float* Vd, uint32_t* VdIndex);
 // Check DUT open (FlatTop hold)
-bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t VdIndex, uint16_t SetVd, uint16_t FlatTopUs, float FlatTopHyst);
+bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t Index_0V, uint16_t SetVd, uint16_t FlatTopUs, float FlatTopHyst,
+	bool* Result);
 // Calculate actual dIdt
 bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, float* dIdt);
 // Calculate Id

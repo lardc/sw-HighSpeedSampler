@@ -174,6 +174,7 @@
 #define PROBLEM_CALC_DIDT			5	// Problem calculating actual dIdt
 #define PROBLEM_CALC_TRR			6	// Problem calculating trr
 #define PROBLEM_CALC_QRR			7	// Problem calculating Qrr
+#define PROBLEM_CALC_VD_TRIG		8	// Problem calculating DUT trig based on Vd
 
 // FAULT & DISABLE
 //

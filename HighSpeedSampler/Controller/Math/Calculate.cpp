@@ -181,41 +181,47 @@ bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* Crossi
 }
 //----------------------------------------------
 
-bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t VdIndex, uint16_t SetVd, uint16_t FlatTopUs, float FlatTopHyst)
+bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t Index_0V, uint16_t SetVd, uint16_t FlatTopUs,
+	float FlatTopHyst, bool* Result)
 {
-	int32_t i;
-	float Vd = SetVd * FlatTopHyst;
+	uint32_t i;
 
-	if (Buffer == NULL || BufferLength == 0 || VdIndex >= BufferLength)
+	if (Buffer == NULL || BufferLength == 0 || Index_0V >= BufferLength)
 		return false;
 
-	// Find rising edge of the FlatTop threshold, searching back from Vd peak
+	// Find rising edge of the FlatTop threshold
+	float Vd = SetVd * FlatTopHyst;
 	int32_t crossIndex = -1;
-	for (i = (int32_t)VdIndex - 1; i >= 0; --i)
+	for (i = Index_0V; i < BufferLength - 1; i++)
 	{
-		if (Buffer[i] < Vd && Buffer[i + 1] >= Vd)
+		if (Buffer[i + 1] >= Vd && Buffer[i] < Vd)
 		{
-			crossIndex = i + 1;
+			crossIndex = i;
 			break;
 		}
 	}
-
+	
+	// Vd voltage below detection limit
 	if (crossIndex < 0)
-		return false;
+	{
+		if (Result) *Result = true;
+		return true;
+	}
 
 	// Convert FlatTop duration to samples and require a full window
-	uint32_t flatTopSamples = (uint32_t)((float)FlatTopUs / SAMPLING_TIME_FRACTION);
-	if ((BufferLength - (uint32_t)crossIndex) < flatTopSamples)
+	uint32_t flatTopSamplesDetected = 0;
+	uint32_t flatTopSamplesRequired = (uint32_t)((float)FlatTopUs / SAMPLING_TIME_FRACTION);
+	if (BufferLength < (flatTopSamplesRequired + crossIndex))
 		return false;
 
 	// DUT is open if voltage stays at or above the threshold over the window
-	int32_t flatTopEnd = crossIndex + (int32_t)flatTopSamples;
-	for (i = crossIndex; i < flatTopEnd; ++i)
+	for (i = (uint32_t)crossIndex; i < BufferLength; ++i)
 	{
-		if (Buffer[i] < Vd)
-			return false;
+		if (Buffer[i] > Vd)
+			flatTopSamplesDetected++;
 	}
 
+	if (Result) *Result = flatTopSamplesRequired > flatTopSamplesDetected;
 	return true;
 }
 //----------------------------------------------
