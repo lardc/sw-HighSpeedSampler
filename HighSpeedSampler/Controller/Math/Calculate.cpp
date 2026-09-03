@@ -194,9 +194,9 @@ bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t Index_0V, uint1
 	int32_t crossIndex = -1;
 	for (i = Index_0V; i < BufferLength - 1; i++)
 	{
-		if (Buffer[i + 1] >= Vd && Buffer[i] < Vd)
+		if (Buffer[i + 1] > Vd && Buffer[i] <= Vd)
 		{
-			crossIndex = i;
+			crossIndex = i + 1;
 			break;
 		}
 	}
@@ -211,7 +211,7 @@ bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t Index_0V, uint1
 	// Convert FlatTop duration to samples and require a full window
 	uint32_t flatTopSamplesDetected = 0, flatTopSamplesMaxWindow = 0;
 	uint32_t flatTopSamplesRequired = (uint32_t)((float)FlatTopUs / SAMPLING_TIME_FRACTION);
-	if (BufferLength < (flatTopSamplesRequired + crossIndex))
+	if (BufferLength < flatTopSamplesRequired + crossIndex)
 		return false;
 
 	// DUT is open if voltage stays at or above the threshold over the window
@@ -226,6 +226,8 @@ bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t Index_0V, uint1
 			flatTopSamplesDetected = 0;
 		}
 	}
+	if (flatTopSamplesDetected > flatTopSamplesMaxWindow)
+		flatTopSamplesMaxWindow = flatTopSamplesDetected;
 
 	if (Result) *Result = flatTopSamplesRequired > flatTopSamplesMaxWindow;
 	return true;
