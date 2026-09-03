@@ -209,7 +209,7 @@ bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t Index_0V, uint1
 	}
 
 	// Convert FlatTop duration to samples and require a full window
-	uint32_t flatTopSamplesDetected = 0;
+	uint32_t flatTopSamplesDetected = 0, flatTopSamplesMaxWindow = 0;
 	uint32_t flatTopSamplesRequired = (uint32_t)((float)FlatTopUs / SAMPLING_TIME_FRACTION);
 	if (BufferLength < (flatTopSamplesRequired + crossIndex))
 		return false;
@@ -219,9 +219,15 @@ bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t Index_0V, uint1
 	{
 		if (Buffer[i] > Vd)
 			flatTopSamplesDetected++;
+		else
+		{
+			if (flatTopSamplesDetected > flatTopSamplesMaxWindow)
+				flatTopSamplesMaxWindow = flatTopSamplesDetected;
+			flatTopSamplesDetected = 0;
+		}
 	}
 
-	if (Result) *Result = flatTopSamplesRequired > flatTopSamplesDetected;
+	if (Result) *Result = flatTopSamplesRequired > flatTopSamplesMaxWindow;
 	return true;
 }
 //----------------------------------------------
