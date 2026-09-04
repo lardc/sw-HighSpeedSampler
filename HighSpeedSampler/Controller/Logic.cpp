@@ -11,8 +11,7 @@
 #include <Windows.h>
 #include "Controller\Global.h"
 #include "Controller\Math\Calculate.h"
-#include "Controller\Math\FIR.h"
-#include "Controller\Math\SplineFilter.h"
+#include "Controller\Math\SavitzkyGolay.h"
 #include "Platform\DataTable.h"
 #include "Platform\DeviceObjectDictionary.h"
 #include "Info.h"
@@ -165,8 +164,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					MEMBUF_fScopeI[i] = ScopeI * ScopeI * P2_I + ScopeI * P1_I + P0_I;
 				}
 
-				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
-				SPLINE_Apply(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
+				SG_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 
 				// Convert to voltage
 				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
@@ -194,8 +192,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 						MEMBUF_fScopeV[i] = ScopeU * ScopeU * P2_U + ScopeU * P1_U + P0_U;
 					}
 
-					FIR_Apply(MEMBUF_fScopeV, MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
-					SPLINE_Apply(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
+					SG_Apply(MEMBUF_fScopeV, MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter);
 				}
 
 				// Main calculations

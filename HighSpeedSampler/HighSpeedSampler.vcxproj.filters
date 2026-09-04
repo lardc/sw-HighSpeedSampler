@@ -93,7 +93,7 @@
     <ClInclude Include="Controller\Memory.h">
       <Filter>Controller</Filter>
     </ClInclude>
-    <ClInclude Include="Controller\Math\FIR.h">
+    <ClInclude Include="Controller\Math\SavitzkyGolay.h">
       <Filter>Controller\Math</Filter>
     </ClInclude>
     <ClInclude Include="Controller\Math\Calculate.h">
@@ -107,9 +107,6 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Controller\Math\SplineFilter.h">
-      <Filter>Controller\Math</Filter>
     </ClInclude>
     <ClInclude Include="Platform\FirmwareInfo.h">
       <Filter>Platform</Filter>
@@ -161,7 +158,7 @@
     <ClCompile Include="Controller\Memory.cpp">
       <Filter>Controller</Filter>
     </ClCompile>
-    <ClCompile Include="Controller\Math\FIR.cpp">
+    <ClCompile Include="Controller\Math\SavitzkyGolay.cpp">
       <Filter>Controller\Math</Filter>
     </ClCompile>
     <ClCompile Include="Controller\Math\Calculate.cpp">
@@ -173,9 +170,6 @@
     <ClCompile Include="Controller\Info.cpp">
       <Filter>Controller</Filter>
     </ClCompile>
-    <ClCompile Include="Controller\Math\SplineFilter.cpp">
-      <Filter>Controller\Math</Filter>
-    </ClCompile>
     <ClCompile Include="Platform\FirmwareInfo.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
@@ -183,6 +177,9 @@
   <ItemGroup>
     <None Include="HighSpeedSampler.config" />
     <None Include="HighSpeedSampler.cmd" />
+    <None Include="Controller\Math\sg_coeff.py">
+      <Filter>Controller\Math</Filter>
+    </None>
     <None Include="gen_git_info.bat">
       <Filter>Source Files</Filter>
     </None>

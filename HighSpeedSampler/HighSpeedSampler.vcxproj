@@ -102,8 +102,7 @@
     <ClInclude Include="Controller\Info.h" />
     <ClInclude Include="Controller\Logic.h" />
     <ClInclude Include="Controller\Math\Calculate.h" />
-    <ClInclude Include="Controller\Math\FIR.h" />
-    <ClInclude Include="Controller\Math\SplineFilter.h" />
+    <ClInclude Include="Controller\Math\SavitzkyGolay.h" />
     <ClInclude Include="Controller\Memory.h" />
     <ClInclude Include="Controller\Sampler.h" />
     <ClInclude Include="Controller\Serial.h" />
@@ -130,8 +129,7 @@
     <ClCompile Include="Controller\Info.cpp" />
     <ClCompile Include="Controller\Logic.cpp" />
     <ClCompile Include="Controller\Math\Calculate.cpp" />
-    <ClCompile Include="Controller\Math\FIR.cpp" />
-    <ClCompile Include="Controller\Math\SplineFilter.cpp" />
+    <ClCompile Include="Controller\Math\SavitzkyGolay.cpp" />
     <ClCompile Include="Controller\Memory.cpp" />
     <ClCompile Include="Controller\Sampler.cpp" />
     <ClCompile Include="Controller\Serial.cpp" />
@@ -151,6 +149,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Controller\Math\sg_coeff.py" />
     <None Include="gen_git_info.bat" />
     <None Include="Platform\git_info.h" />
     <None Include="HighSpeedSampler.cmd" />
