@@ -87,7 +87,7 @@
       <AdditionalDependencies>External\ps5000a.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config" &amp;&amp; copy /y "$(ProjectDir)HighSpeedSampler.cmd" "$(OutDir)HighSpeedSampler.cmd"
+      <Command>copy /y "$(ProjectDir)HighSpeedSampler.config" "$(OutDir)HighSpeedSampler.config" &amp;&amp; copy /y "$(ProjectDir)HighSpeedSampler.cmd" "$(OutDir)HighSpeedSampler.cmd" &amp;&amp; "$(ProjectDir)gen_fw_name.bat" "$(TargetPath)"
 </Command>
     </PostBuildEvent>
     <PreBuildEvent>

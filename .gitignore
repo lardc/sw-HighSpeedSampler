@@ -1,6 +1,7 @@
 /Release/*.iobj
 /Release/*.ipdb
 /Release/*.pdb
+/Release/*_*.exe
 /.vs
 /HighSpeedSampler/Release
 /HighSpeedSampler/git_info.h
