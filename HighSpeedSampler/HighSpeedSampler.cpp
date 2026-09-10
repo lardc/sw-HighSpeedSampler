@@ -14,6 +14,26 @@
 #include "git_info.h"
 #include <string>
 
+// Use the executable directory as CWD so sidecar files
+// (config, DataTable.bin, csv dumps) are found even if the
+// process was started from another folder (e.g. d:\Agent).
+static bool SetWorkingDirectoryToExe()
+{
+	TCHAR modulePath[MAX_PATH];
+	DWORD length = GetModuleFileName(NULL, modulePath, MAX_PATH);
+	if (length == 0 || length >= MAX_PATH)
+		return false;
+
+	TCHAR* lastSlash = _tcsrchr(modulePath, _T('\\'));
+	if (lastSlash == NULL)
+		lastSlash = _tcsrchr(modulePath, _T('/'));
+	if (lastSlash == NULL)
+		return false;
+
+	*lastSlash = _T('\0');
+	return SetCurrentDirectory(modulePath) != 0;
+}
+
 // Functions
 //
 int _tmain(int argc, _TCHAR* argv[])
@@ -26,6 +46,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	InfoPrint(IP_Info, (std::string("Git Commit: ") + git_commit).c_str());
 	InfoPrint(IP_Info, (std::string("Commit date: ") + git_date).c_str());
 	InfoPrint(IP_Info, (std::string("Project: ") + git_proj).c_str());
+
+	if (!SetWorkingDirectoryToExe())
+	{
+		InfoPrint(IP_Err, "Failed to set working directory to executable folder");
+		getchar();
+		return 1;
+	}
+
 	// Load configuration
 	try
 	{
