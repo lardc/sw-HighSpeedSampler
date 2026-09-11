@@ -11,7 +11,7 @@
 #include "Controller.h"
 #include "ConfigFile.h"
 #include "Info.h"
-#include "Platform\git_info.h"
+#include "git_info.h"
 #include <string>
 
 // Use the executable directory as CWD so sidecar files

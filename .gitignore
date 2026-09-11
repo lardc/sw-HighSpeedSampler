@@ -2,5 +2,8 @@
 /Release/*.ipdb
 /Release/*.pdb
 /Release/*_*.exe
+/Debug
 /.vs
 /HighSpeedSampler/Release
+/HighSpeedSampler/Debug
+/HighSpeedSampler/git_info.h
