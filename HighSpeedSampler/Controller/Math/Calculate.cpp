@@ -104,7 +104,7 @@ float CALC_Qrr(float* Buffer, uint32_t BufferLength, uint32_t t0, uint32_t trr, 
 
 bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, float* dIdt)
 {
-	uint32_t i, Id_half = 0, Ir_half = t0;
+	uint32_t i, Id_half = 0, Ir_half = t0, Id_10 = 0;
 	float Id;
 
 	// Find Id_max
@@ -121,19 +121,38 @@ bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, flo
 	}
 	if (i == t0) return false;
 
-	// Find Ir_half
-	for (i = t0; i < trr; ++i)
+	// Primary : for 50% Id & 50% Ir 
+	if (trr > t0)
 	{
-		if (Buffer[i] <= (Buffer[trr] / 2))
+		for (i = t0; i < trr; ++i)
 		{
-			Ir_half = i;
+			if (Buffer[i] <= (Buffer[trr] / 2))
+			{
+				Ir_half = i;
+				break;
+			}
+		}
+
+		if (i != trr && Ir_half > Id_half)
+		{
+			*dIdt = (Buffer[Id_half] - Buffer[Ir_half]) / ((Ir_half - Id_half) * TimeFraction);
+			return true;
+		}
+	}
+
+	// Fallback: 50% Id .. 10% Id if no zero crossing 
+	for (i = Id_half; i < t0; ++i)
+	{
+		if (Buffer[i] <= (Id * 0.1f))
+		{
+			Id_10 = i;
 			break;
 		}
 	}
-	if (i == trr) return false;
+	if (i == t0 || Id_10 <= Id_half)
+		return false;
 
-	// Calculate dIdt
-	*dIdt = (Buffer[Id_half] - Buffer[Ir_half]) / ((Ir_half - Id_half) * TimeFraction);
+	*dIdt = (Buffer[Id_half] - Buffer[Id_10]) / ((Id_10 - Id_half) * TimeFraction);
 	return true;
 }
 //----------------------------------------------

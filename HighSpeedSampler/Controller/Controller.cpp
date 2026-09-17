@@ -269,6 +269,13 @@ void CONTROL_HandleSamplerData()
 			{
 				DataTable[REG_OP_RESULT] = OPRESULT_FAIL;
 				DataTable[REG_PROBLEM] = CalcProblem;
+
+				// On missing zero-crossing keep Id and dIdt 
+				if (CalcProblem == PROBLEM_CALC_IRR || CalcProblem == PROBLEM_MEASURED_ID_TOO_LOW)
+				{
+					DataTable[REG_RESULT_DIDT] = (uint16_t)(dIdt * 100);
+					DataTable[REG_RESULT_ID] = (uint16_t)Id;
+				}
 			}
 			CONTROL_SetDeviceState(DS_None);
 		}

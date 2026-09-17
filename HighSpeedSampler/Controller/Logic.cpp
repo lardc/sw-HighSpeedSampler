@@ -207,7 +207,28 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					// Calculate Index0 and Irr parameters
 					uint32_t Index_0 = 0, Index_Irr = 0;
 					if (!CALC_IrrAndZeroCrossingIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, &Index_0, &Index_Irr))
+					{
+						// No zero crossing: only Id and dIdt 
+						sprintf_s(message, 256, "No current zero-crossing; Id and dIdt only");
+						InfoPrint(IP_Warn, message);
+
+						*Id = CALC_Id(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
+						sprintf_s(message, 256, "Idc: %.1f", *Id);
+						InfoPrint(IP_Info, message);
+
+						if (!CALC_dIdt(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, MEMBUF_Scope_Counter,
+							SAMPLING_TIME_FRACTION, &Actual_dIdt))
+							throw PROBLEM_CALC_DIDT;
+
+						if (dIdt) *dIdt = Actual_dIdt;
+						sprintf_s(message, 256, "Actual dIdt : %.2f", Actual_dIdt);
+						InfoPrint(IP_Info, message);
+
+						if (*Id < (0.5f * (float)DataTable[REG_CURRENT_AMPL]))
+							throw PROBLEM_MEASURED_ID_TOO_LOW;
+
 						throw PROBLEM_CALC_IRR;
+					}
 
 					if (Index0) *Index0 = Index_0;
 					if (IndexIrr) *IndexIrr = Index_Irr;
@@ -298,6 +319,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 					sprintf_s(message, 256, "Idc: %.1f", *Id);
 					InfoPrint(IP_Info, message);
+
+					if (*Id < (0.5f * (float)DataTable[REG_CURRENT_AMPL]))
+						throw PROBLEM_MEASURED_ID_TOO_LOW;
 
 					// Calculate voltage parameters
 					if (!SCOPE_CURRENT_ONLY)
