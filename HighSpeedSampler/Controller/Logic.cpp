@@ -216,6 +216,9 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 						sprintf_s(message, 256, "Idc: %.1f", *Id);
 						InfoPrint(IP_Info, message);
 
+						if (*Id < (0.5f * (float)DataTable[REG_CURRENT_AMPL]))
+							throw PROBLEM_MEASURED_ID_TOO_LOW;
+
 						if (!CALC_dIdt(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, MEMBUF_Scope_Counter,
 							SAMPLING_TIME_FRACTION, &Actual_dIdt))
 							throw PROBLEM_CALC_DIDT;
@@ -223,9 +226,6 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 						if (dIdt) *dIdt = Actual_dIdt;
 						sprintf_s(message, 256, "Actual dIdt : %.2f", Actual_dIdt);
 						InfoPrint(IP_Info, message);
-
-						if (*Id < (0.5f * (float)DataTable[REG_CURRENT_AMPL]))
-							throw PROBLEM_MEASURED_ID_TOO_LOW;
 
 						throw PROBLEM_CALC_IRR;
 					}
