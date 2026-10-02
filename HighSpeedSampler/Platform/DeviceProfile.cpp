@@ -320,7 +320,13 @@ static uint16_t DEVPROFILE_CallbackReadX(uint16_t Endpoint, uint16_t* *Buffer, b
 
 	// Update content state
 	epState->LastReadCounter = epState->ReadCounter;
-	epState->ReadCounter += pLen;
+	if (!Streamed)
+	{
+		if (pLen == 0)
+			epState->ReadCounter = 0;
+		else
+			epState->ReadCounter += pLen;
+	}
 
 	return pLen;
 }

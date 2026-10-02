@@ -207,13 +207,35 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					// Calculate Index0 and Irr parameters
 					uint32_t Index_0 = 0, Index_Irr = 0;
 					if (!CALC_IrrAndZeroCrossingIndex(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, &Index_0, &Index_Irr))
+					{
+						// No zero crossing: only Id and dIdt 
+						sprintf_s(message, 256, "No current zero-crossing; Id and dIdt only");
+						InfoPrint(IP_Warn, message);
+
+						*Id = CALC_Id(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
+						sprintf_s(message, 256, "Idc: %.1f", *Id);
+						InfoPrint(IP_Info, message);
+
+						if (*Id < (0.5f * (float)DataTable[REG_CURRENT_AMPL]))
+							throw PROBLEM_MEASURED_ID_TOO_LOW;
+
+						if (!CALC_dIdt(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter, MEMBUF_Scope_Counter,
+							SAMPLING_TIME_FRACTION, &Actual_dIdt))
+							throw PROBLEM_CALC_DIDT;
+
+						if (dIdt) *dIdt = Actual_dIdt;
+						sprintf_s(message, 256, "Actual dIdt : %.2f", Actual_dIdt);
+						InfoPrint(IP_Info, message);
+
 						throw PROBLEM_CALC_IRR;
+					}
 
 					if (Index0) *Index0 = Index_0;
 					if (IndexIrr) *IndexIrr = Index_Irr;
-					if (Irr) *Irr = fabsf(MEMBUF_fScopeIFiltered[Index_Irr]);
+					float _Irr = fabsf(MEMBUF_fScopeIFiltered[Index_Irr]);
+					if (Irr) *Irr = _Irr;
 
-					sprintf_s(message, 256, "Index 0: %d; Index Irr: %d", Index_0, Index_Irr);
+					sprintf_s(message, 256, "Index 0: %d; Index Irr: %d, Irr: %.1f", Index_0, Index_Irr, _Irr);
 					InfoPrint(IP_Info, message);
 
 					// Calculate Irr pivot points
@@ -298,8 +320,11 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 					sprintf_s(message, 256, "Idc: %.1f", *Id);
 					InfoPrint(IP_Info, message);
 
+					if (*Id < (0.5f * (float)DataTable[REG_CURRENT_AMPL]))
+						throw PROBLEM_MEASURED_ID_TOO_LOW;
+
 					// Calculate voltage parameters
-					if (UseVoltage && !SCOPE_CURRENT_ONLY)
+					if (!SCOPE_CURRENT_ONLY)
 					{
 						float _Vr_min = 0.0f;
 						CALC_Vr_min(MEMBUF_fScopeVFiltered, Index_0, Index_trr, &_Vr_min);
@@ -308,29 +333,37 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 						sprintf_s(message, 256, "Vr_min: %.1f", _Vr_min);
 						InfoPrint(IP_Info, message);
 
-						uint32_t Index_0V = 0, Index_Vd = 0;
-						bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd, &Index_Vd);
-						if (Index0V) *Index0V = Index_0V;
-
-						sprintf_s(message, 256, "Set Vd: %u, detected Vd: %.1f", SetVd, *Vd);
-						InfoPrint(IP_Info, message);
-
-						// Extra logic for DUT trig check
-						if (ZeroCrossingCalcOK)
+						if(UseVoltage)
 						{
-							bool _DUTTrig = CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_Vd, SetVd,
-								DataTable[REG_FLATTOP_DUT_US], (float)DataTable[REG_FLATTOP_DUT_HYST] / 1000.0f);
-							if (DutTrig) *DutTrig = _DUTTrig;
+							uint32_t Index_0V = 0, Index_Vd = 0;
+							bool ZeroCrossingCalcOK = CALC_OSVZeroCrossing(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, &Index_0V, Vd, &Index_Vd);
+							if (Index0V) *Index0V = Index_0V;
 
-							sprintf_s(message, 256, "Extra logic for DUT trig detection: %s, index V0: %d",
-								_DUTTrig ? "DUT trigged" : "DUT not trigged", Index_0V);
+							sprintf_s(message, 256, "Set Vd: %u, detected Vd: %.1f, Index_0V: %d, Index_Vd: %d",
+								SetVd, *Vd, Index_0V, Index_Vd);
 							InfoPrint(IP_Info, message);
-						}
-						else
-						{
-							sprintf_s(message, 256, "DUT trigged based of zero-voltage calc fail");
-							InfoPrint(IP_Info, message);
-							if (DutTrig) *DutTrig = true;
+
+							// Extra logic for DUT trig check
+							if (ZeroCrossingCalcOK)
+							{
+								bool DUTTrigResult;
+								if (CALC_DUTTrig(MEMBUF_fScopeVFiltered, MEMBUF_Scope_Counter, Index_0V, SetVd,
+									DataTable[REG_FLATTOP_DUT_US], (float)DataTable[REG_FLATTOP_DUT_HYST] / 1000.0f, &DUTTrigResult))
+								{
+									if (DutTrig) *DutTrig = DUTTrigResult;
+									sprintf_s(message, 256, "Extra logic for DUT trig detection: %s",
+										DUTTrigResult ? "DUT trigged" : "DUT not trigged");
+									InfoPrint(IP_Info, message);
+								}
+								else
+									throw PROBLEM_CALC_VD_TRIG;
+							}
+							else
+							{
+								sprintf_s(message, 256, "DUT trigged based of zero-voltage calc fail");
+								InfoPrint(IP_Info, message);
+								if (DutTrig) *DutTrig = true;
+							}
 						}
 					}
 				}

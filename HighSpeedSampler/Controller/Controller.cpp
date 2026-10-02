@@ -224,7 +224,7 @@ void CONTROL_HandleSamplerData()
 
 			InfoPrint(IP_Info, "Sampling finished");
 			PICO_STATUS status = LOGIC_HandleSamplerData(&CalcProblem, &Index0, &Irr, &trr, &Qrr, &dIdt, &Id, &Vd,
-				(DataTable[REG_MEASURE_MODE] == MODE_QRR) ? false : true, (DataTable[REG_TR_050_METHOD] == 0) ? false : true,
+				DataTable[REG_MEASURE_MODE] != MODE_QRR, DataTable[REG_TR_050_METHOD] != 0,
 				&Index0V, &Time09, &trs, &trf, &Vr_min, DataTable[REG_VOLTAGE_AMPL], &DutTrig, &IndexIrr);
 			
 			CONTROL_DeleteRS232Timer();
@@ -239,9 +239,12 @@ void CONTROL_HandleSamplerData()
 			uint32_t forced_sector = (uint32_t)((float)DataTable[REG_DIAG_FORCE_SECTOR_READ] / SAMPLING_TIME_FRACTION);
 			MEMBUF_Values1_Counter = LOGIC_GetIData(MEMBUF_Values1, VALUES_READx_SIZE,
 				DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, &SampleTimeStep, IndexIrr);
-			MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE,
-				DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, NULL);
 			DataTable[REG_EP_STEP_FRACTION_CNT] = SampleTimeStep;
+			if (!SCOPE_CURRENT_ONLY)
+			{
+				MEMBUF_Values2_Counter = LOGIC_GetVData(MEMBUF_Values2, VALUES_READx_SIZE,
+					DataTable[REG_MEASURE_MODE] == MODE_QRR, Index0, Index0V, forced_sector, NULL);
+			}
 
 			if(CalcProblem == PROBLEM_NONE)
 			{
@@ -266,6 +269,13 @@ void CONTROL_HandleSamplerData()
 			{
 				DataTable[REG_OP_RESULT] = OPRESULT_FAIL;
 				DataTable[REG_PROBLEM] = CalcProblem;
+
+				// On missing zero-crossing keep Id and dIdt 
+				if (CalcProblem == PROBLEM_CALC_IRR || CalcProblem == PROBLEM_MEASURED_ID_TOO_LOW)
+				{
+					DataTable[REG_RESULT_DIDT] = (uint16_t)(dIdt * 100);
+					DataTable[REG_RESULT_ID] = (uint16_t)Id;
+				}
 			}
 			CONTROL_SetDeviceState(DS_None);
 		}

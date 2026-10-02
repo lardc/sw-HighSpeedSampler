@@ -104,7 +104,7 @@ float CALC_Qrr(float* Buffer, uint32_t BufferLength, uint32_t t0, uint32_t trr, 
 
 bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, float* dIdt)
 {
-	uint32_t i, Id_half = 0, Ir_half = t0;
+	uint32_t i, Id_half = 0, Ir_half = t0, Id_10 = 0;
 	float Id;
 
 	// Find Id_max
@@ -121,19 +121,38 @@ bool CALC_dIdt(float* Buffer, uint32_t t0, uint32_t trr, float TimeFraction, flo
 	}
 	if (i == t0) return false;
 
-	// Find Ir_half
-	for (i = t0; i < trr; ++i)
+	// Primary : for 50% Id & 50% Ir 
+	if (trr > t0)
 	{
-		if (Buffer[i] <= (Buffer[trr] / 2))
+		for (i = t0; i < trr; ++i)
 		{
-			Ir_half = i;
+			if (Buffer[i] <= (Buffer[trr] / 2))
+			{
+				Ir_half = i;
+				break;
+			}
+		}
+
+		if (i != trr && Ir_half > Id_half)
+		{
+			*dIdt = (Buffer[Id_half] - Buffer[Ir_half]) / ((Ir_half - Id_half) * TimeFraction);
+			return true;
+		}
+	}
+
+	// Fallback: 50% Id .. 10% Id if no zero crossing 
+	for (i = Id_half; i < t0; ++i)
+	{
+		if (Buffer[i] <= (Id * 0.1f))
+		{
+			Id_10 = i;
 			break;
 		}
 	}
-	if (i == trr) return false;
+	if (i == t0 || Id_10 <= Id_half)
+		return false;
 
-	// Calculate dIdt
-	*dIdt = (Buffer[Id_half] - Buffer[Ir_half]) / ((Ir_half - Id_half) * TimeFraction);
+	*dIdt = (Buffer[Id_half] - Buffer[Id_10]) / ((Id_10 - Id_half) * TimeFraction);
 	return true;
 }
 //----------------------------------------------
@@ -181,41 +200,55 @@ bool CALC_OSVZeroCrossing(float* Buffer, uint32_t BufferLength, uint32_t* Crossi
 }
 //----------------------------------------------
 
-bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t VdIndex, uint16_t SetVd, uint16_t FlatTopUs, float FlatTopHyst)
+bool CALC_DUTTrig(float* Buffer, uint32_t BufferLength, uint32_t Index_0V, uint16_t SetVd, uint16_t FlatTopUs,
+	float FlatTopHyst, bool* Result)
 {
-	int32_t i;
-	float Vd = SetVd * FlatTopHyst;
+	uint32_t i;
 
-	if (Buffer == NULL || BufferLength == 0 || VdIndex >= BufferLength)
+	if (Buffer == NULL || BufferLength == 0 || Index_0V >= BufferLength)
 		return false;
 
-	// Find rising edge of the FlatTop threshold, searching back from Vd peak
+	// Find rising edge of the FlatTop threshold
+	float Vd = SetVd * FlatTopHyst;
 	int32_t crossIndex = -1;
-	for (i = (int32_t)VdIndex - 1; i >= 0; --i)
+	for (i = Index_0V; i < BufferLength - 1; i++)
 	{
-		if (Buffer[i] < Vd && Buffer[i + 1] >= Vd)
+		if (Buffer[i + 1] > Vd && Buffer[i] <= Vd)
 		{
 			crossIndex = i + 1;
 			break;
 		}
 	}
-
+	
+	// Vd voltage below detection limit
 	if (crossIndex < 0)
-		return false;
+	{
+		if (Result) *Result = true;
+		return true;
+	}
 
 	// Convert FlatTop duration to samples and require a full window
-	uint32_t flatTopSamples = (uint32_t)((float)FlatTopUs / SAMPLING_TIME_FRACTION);
-	if ((BufferLength - (uint32_t)crossIndex) < flatTopSamples)
+	uint32_t flatTopSamplesDetected = 0, flatTopSamplesMaxWindow = 0;
+	uint32_t flatTopSamplesRequired = (uint32_t)((float)FlatTopUs / SAMPLING_TIME_FRACTION);
+	if (BufferLength < flatTopSamplesRequired + crossIndex)
 		return false;
 
 	// DUT is open if voltage stays at or above the threshold over the window
-	int32_t flatTopEnd = crossIndex + (int32_t)flatTopSamples;
-	for (i = crossIndex; i < flatTopEnd; ++i)
+	for (i = (uint32_t)crossIndex; i < BufferLength; ++i)
 	{
-		if (Buffer[i] < Vd)
-			return false;
+		if (Buffer[i] > Vd)
+			flatTopSamplesDetected++;
+		else
+		{
+			if (flatTopSamplesDetected > flatTopSamplesMaxWindow)
+				flatTopSamplesMaxWindow = flatTopSamplesDetected;
+			flatTopSamplesDetected = 0;
+		}
 	}
+	if (flatTopSamplesDetected > flatTopSamplesMaxWindow)
+		flatTopSamplesMaxWindow = flatTopSamplesDetected;
 
+	if (Result) *Result = flatTopSamplesRequired > flatTopSamplesMaxWindow;
 	return true;
 }
 //----------------------------------------------
