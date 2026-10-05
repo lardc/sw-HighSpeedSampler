@@ -77,7 +77,15 @@ PICO_STATUS SAMPLER_Open(const char *ScopeSerialVoltage, const char *ScopeSerial
 	if (DualScope)
 	{
 		if (SCOPE_CURRENT_ONLY || (ret_val = SAMPLER_OpenX(ScopeSerialVoltage, &VHandler, VOpenStatus)) == PICO_OK)
+		{
 			ret_val = SAMPLER_OpenX(ScopeSerialCurrent, &IHandler, IOpenStatus);
+			if (ret_val != PICO_OK && VHandler >= 0)
+			{
+				PICO_STATUS close_status = DIAG_EMULATE_SCOPES ? PICO_OK : ps5000aCloseUnit(VHandler);
+				if (close_status == PICO_OK)
+					VHandler = -1;
+			}
+		}
 	}
 	else
 	{
