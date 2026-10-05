@@ -194,7 +194,7 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 					for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
 					{
-						float ScopeU = (float)MEMBUF_ScopeV[i] / INT16_MAX * VRangeCoeff * Kvoltage;
+						float ScopeU = (float)MEMBUF_ScopeV[i] / INT16_MAX * VRangeCoeff / Kvoltage;
 						MEMBUF_fScopeV[i] = ScopeU * ScopeU * P2_U + ScopeU * P1_U + P0_U;
 					}
 
