@@ -171,9 +171,6 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 				SPLINE_Apply(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 
-				// Convert to voltage
-				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
-
 				float P2_U = 0.0f, P1_U = 1.0f, P0_U = 0.0f;
 				PS5000A_RANGE VRange = SAMPLER_GetSavedVRange();
 				if (VRange >= PS5000A_500MV && VRange <= PS5000A_10V)
@@ -191,9 +188,13 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 				if (!SCOPE_CURRENT_ONLY)
 				{
+					// Convert to voltage
+					float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
+					float VRangeCoeff = SAMPLER_GetVRangeCoeff();
+
 					for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
 					{
-						float ScopeU = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX);
+						float ScopeU = (float)MEMBUF_ScopeV[i] / INT16_MAX * VRangeCoeff * Kvoltage;
 						MEMBUF_fScopeV[i] = ScopeU * ScopeU * P2_U + ScopeU * P1_U + P0_U;
 					}
 
