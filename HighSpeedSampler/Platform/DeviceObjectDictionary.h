@@ -29,8 +29,8 @@
 // 2 - 4
 #define REG_INVERT_CURRENT			5	// Enable current inversion
 // 6 - 8
-#define REG_VOLTAGE_DIV_N			9	// Voltage divider coefficient (N)
-#define REG_VOLTAGE_DIV_D			10	// Voltage divider coefficient (D)
+#define REG_VOLTAGE_K_N				9	// Voltage coefficient (N)
+#define REG_VOLTAGE_K_D				10	// Voltage coefficient (D)
 //
 #define REG_U_5_P2					11	// Коэффициент тонкой подстройки Р2
 #define REG_U_5_P1					12	// Коэффициент тонкой подстройки Р2

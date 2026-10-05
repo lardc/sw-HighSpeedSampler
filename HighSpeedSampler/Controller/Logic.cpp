@@ -91,12 +91,11 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 	CurrentSetV = 0.001f * CurrentSet * ShuntResCache;
 	
 	// Voltage parameters
-	float Vdiv = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
+	float Vk = (float)DataTable[REG_VOLTAGE_K_N] / DataTable[REG_VOLTAGE_K_D];
 	float Vmax = fabsf(SAMPLING_QRR_VR) * 2;
 	if (DataTable[REG_MEASURE_MODE] == MODE_QRR_TQ && DataTable[REG_VOLTAGE_AMPL] > Vmax)
 		Vmax = DataTable[REG_VOLTAGE_AMPL];
-	VoltageSet = Vdiv * Vmax;
-
+	VoltageSet = Vmax / Vk;
 	if ((status = SAMPLER_ConfigureChannels(v_range  = SAMPLER_SelectRange(VoltageSet),
 											iv_range = SAMPLER_SelectRange(CurrentSetV))) == PICO_OK)
 	{
@@ -189,12 +188,12 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				if (!SCOPE_CURRENT_ONLY)
 				{
 					// Convert to voltage
-					float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
+					float Vk = (float)DataTable[REG_VOLTAGE_K_N] / DataTable[REG_VOLTAGE_K_D];
 					float VRangeCoeff = SAMPLER_GetVRangeCoeff();
 
 					for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
 					{
-						float ScopeU = (float)MEMBUF_ScopeV[i] / INT16_MAX * VRangeCoeff / Kvoltage;
+						float ScopeU = (float)MEMBUF_ScopeV[i] / INT16_MAX * VRangeCoeff * Vk;
 						MEMBUF_fScopeV[i] = ScopeU * ScopeU * P2_U + ScopeU * P1_U + P0_U;
 					}
 
