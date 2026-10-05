@@ -37,6 +37,9 @@ PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *Scop
 	InfoPrint(IP_Info, "Attempt to open scopes");
 	status = SAMPLER_Open(ScopeSerialVoltage, ScopeSerialCurrent, &VOpenStatus, &IOpenStatus);
 
+	sprintf_s(message, 256, "Scope mode: %s", SAMPLER_IsDualScope() ? "dual-scope" : "single-scope two-channel");
+	InfoPrint(IP_Info, message);
+
 	sprintf_s(message, 256, "Voltage scope open status: 0x%08x", VOpenStatus);
 	InfoPrint(status == PICO_OK ? IP_Info : IP_Warn, message);
 
@@ -45,7 +48,7 @@ PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *Scop
 
 	if (status == PICO_OK)
 	{
-		InfoPrint(IP_Info, "Scopes are opened");
+		InfoPrint(IP_Info, SAMPLER_IsDualScope() ? "Scopes are opened" : "Scope is opened");
 		status = SAMPLER_Init();
 	}
 
@@ -88,12 +91,11 @@ PICO_STATUS LOGIC_PicoScopeActivate()
 	CurrentSetV = 0.001f * CurrentSet * ShuntResCache;
 	
 	// Voltage parameters
-	float Vdiv = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
+	float Vk = (float)DataTable[REG_VOLTAGE_K_N] / DataTable[REG_VOLTAGE_K_D];
 	float Vmax = fabsf(SAMPLING_QRR_VR) * 2;
 	if (DataTable[REG_MEASURE_MODE] == MODE_QRR_TQ && DataTable[REG_VOLTAGE_AMPL] > Vmax)
 		Vmax = DataTable[REG_VOLTAGE_AMPL];
-	VoltageSet = Vdiv * Vmax;
-
+	VoltageSet = Vmax / Vk;
 	if ((status = SAMPLER_ConfigureChannels(v_range  = SAMPLER_SelectRange(VoltageSet),
 											iv_range = SAMPLER_SelectRange(CurrentSetV))) == PICO_OK)
 	{
@@ -168,9 +170,6 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 				FIR_Apply(MEMBUF_fScopeI, MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 				SPLINE_Apply(MEMBUF_fScopeIFiltered, MEMBUF_Scope_Counter);
 
-				// Convert to voltage
-				float Kvoltage = (float)DataTable[REG_VOLTAGE_DIV_N] / DataTable[REG_VOLTAGE_DIV_D];
-
 				float P2_U = 0.0f, P1_U = 1.0f, P0_U = 0.0f;
 				PS5000A_RANGE VRange = SAMPLER_GetSavedVRange();
 				if (VRange >= PS5000A_500MV && VRange <= PS5000A_10V)
@@ -188,9 +187,13 @@ PICO_STATUS LOGIC_HandleSamplerData(uint16_t* CalcProblem, uint32_t* Index0, flo
 
 				if (!SCOPE_CURRENT_ONLY)
 				{
+					// Convert to voltage
+					float Vk = (float)DataTable[REG_VOLTAGE_K_N] / DataTable[REG_VOLTAGE_K_D];
+					float VRangeCoeff = SAMPLER_GetVRangeCoeff();
+
 					for (uint32_t i = 0; i < MEMBUF_Scope_Counter; ++i)
 					{
-						float ScopeU = (SAMPLER_GetVRangeCoeff() * MEMBUF_ScopeV[i]) / (Kvoltage * INT16_MAX);
+						float ScopeU = (float)MEMBUF_ScopeV[i] / INT16_MAX * VRangeCoeff * Vk;
 						MEMBUF_fScopeV[i] = ScopeU * ScopeU * P2_U + ScopeU * P1_U + P0_U;
 					}
 

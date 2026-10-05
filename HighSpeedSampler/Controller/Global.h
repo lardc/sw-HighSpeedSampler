@@ -28,10 +28,12 @@
 #define MODE_QRR_TQ					1
 //
 // Sampling settings
-#define SAMPLING_ACTIVE_CHANNEL		PS5000A_CHANNEL_A	// Sampling active channel
-#define SAMPLING_OFF_CHANNEL		PS5000A_CHANNEL_B	// Turned off channel channel
+#define SAMPLING_ACTIVE_CHANNEL		PS5000A_CHANNEL_A	// Dual-scope: active channel on each unit
+#define SAMPLING_OFF_CHANNEL		PS5000A_CHANNEL_B	// Dual-scope: disabled channel on each unit
+#define SAMPLING_I_CHANNEL			PS5000A_CHANNEL_A	// Single-scope: current channel
+#define SAMPLING_V_CHANNEL			PS5000A_CHANNEL_B	// Single-scope: voltage channel
 #define SAMPLING_DEFAULT_RANGE		PS5000A_20V			// Default sampling current range
-#define SAMPLING_RESOLUTION			PS5000A_DR_15BIT	// Sampling resolution
+#define SAMPLING_RESOLUTION			PS5000A_DR_15BIT	// Sampling resolution (same for dual/single; lower only if SingleScope API rejects 15-bit)
 #define SAMPLING_TIME_BASE			3					// Sampling timebase
 #define SAMPLING_TIME_FRACTION		0.008f				// Sampling time fraction (in us)
 #define SAMPLING_SAMPLES			800000L				// Number of samples in block mode

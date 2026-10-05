@@ -60,8 +60,8 @@ int _tmain(int argc, _TCHAR* argv[])
 		ConfigFile cf("HighSpeedSampler.config");
 		PortNumber =			(int)cf.Value("serial", "portnum");
 		PortBR =				(int)cf.Value("serial", "baudrate");
-		ScopeSerialVoltage =	cf.Value("serial", "scope_voltage");
-		ScopeSerialCurrent =	cf.Value("serial", "scope_current");
+		ScopeSerialVoltage =	cf.Value("serial", "scope_voltage", "");
+		ScopeSerialCurrent =	cf.Value("serial", "scope_current", "");
 
 		InfoPrint(IP_Info, "Config file loaded");
 	}

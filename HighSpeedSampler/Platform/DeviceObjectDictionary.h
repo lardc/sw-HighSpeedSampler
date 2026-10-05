@@ -26,15 +26,11 @@
 //
 #define REG_SHUNT_RES_N				0	// Shunt resistance (in mOhms) (N)
 #define REG_SHUNT_RES_D				1	// Shunt resistance (in mOhms) (D)
-#define REG_I_FINE_N				2	// Current fine tune K (N)
-#define REG_I_FINE_D				3	// Current fine tune K (D)
-#define REG_I_FINE_OFFSET			4	// Current fine offset (x10 in A)
+// 2 - 4
 #define REG_INVERT_CURRENT			5	// Enable current inversion
-#define REG_V_FINE_N				6	// Voltage fine tune K (N)
-#define REG_V_FINE_D				7	// Voltage fine tune K (D)
-#define REG_V_FINE_OFFSET			8	// Voltage fine offset (x10 in V)
-#define REG_VOLTAGE_DIV_N			9	// Voltage divider coefficient (N)
-#define REG_VOLTAGE_DIV_D			10	// Voltage divider coefficient (D)
+// 6 - 8
+#define REG_VOLTAGE_K_N				9	// Voltage coefficient (N)
+#define REG_VOLTAGE_K_D				10	// Voltage coefficient (D)
 //
 #define REG_U_5_P2					11	// Коэффициент тонкой подстройки Р2
 #define REG_U_5_P1					12	// Коэффициент тонкой подстройки Р2
