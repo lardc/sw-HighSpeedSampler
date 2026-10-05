@@ -37,6 +37,9 @@ PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *Scop
 	InfoPrint(IP_Info, "Attempt to open scopes");
 	status = SAMPLER_Open(ScopeSerialVoltage, ScopeSerialCurrent, &VOpenStatus, &IOpenStatus);
 
+	sprintf_s(message, 256, "Scope mode: %s", SAMPLER_IsDualScope() ? "dual-scope" : "single-scope two-channel");
+	InfoPrint(IP_Info, message);
+
 	sprintf_s(message, 256, "Voltage scope open status: 0x%08x", VOpenStatus);
 	InfoPrint(status == PICO_OK ? IP_Info : IP_Warn, message);
 
@@ -45,7 +48,7 @@ PICO_STATUS LOGIC_PicoScopeInit(const char *ScopeSerialVoltage, const char *Scop
 
 	if (status == PICO_OK)
 	{
-		InfoPrint(IP_Info, "Scopes are opened");
+		InfoPrint(IP_Info, SAMPLER_IsDualScope() ? "Scopes are opened" : "Scope is opened");
 		status = SAMPLER_Init();
 	}
 
