@@ -48,8 +48,14 @@ PICO_STATUS SAMPLER_OpenX(const char *SerialNumber, int16_t *Handler, PICO_STATU
 	switch (ret_val)
 	{
 		case PICO_OK:
-		case PICO_POWER_SUPPLY_NOT_CONNECTED:
 		case PICO_EEPROM_CORRUPT:
+			// Device already in a usable power state — ChangePowerSource(NOT_CONNECTED)
+			// would return PICO_POWER_SUPPLY_REQUEST_INVALID (0x11B).
+			*OpenStatus = ret_val;
+			ret_val = PICO_OK;
+			break;
+
+		case PICO_POWER_SUPPLY_NOT_CONNECTED:
 		case PICO_USB3_0_DEVICE_NON_USB3_0_PORT:
 			{
 				*OpenStatus = ret_val;
