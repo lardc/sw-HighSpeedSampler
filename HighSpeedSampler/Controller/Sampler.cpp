@@ -358,6 +358,17 @@ PICO_STATUS SAMPLER_ActivateSampling()
 	if (SCOPE_CURRENT_ONLY)
 		SamplingVDone = true;
 
+	// SetChannel at test start clears the trigger. Re-arm the external input
+	// PS5000A_EXTERNAL after the final channel setup.
+	ret_val = SAMPLER_ConfigureTrigger();
+	if (ret_val != PICO_OK)
+	{
+		char message[256];
+		sprintf_s(message, 256, "External trigger setup failed: 0x%08x", ret_val);
+		InfoPrint(IP_Err, message);
+		return ret_val;
+	}
+
 	uint32_t samples = LOGIC_GetSamplingSamples();
 
 	if (DualScope)
